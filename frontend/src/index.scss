@@ -1,0 +1,116 @@
+* {
+    margin: 0;
+}
+
+.auth {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.ticket {
+    border-radius: 0;
+    border: 1px solid #0277ff;
+}
+
+.title-5,
+.ant-modal-title {
+    font-size: 18px !important;
+    color: #0277ff !important;
+    font-weight: 500 !important;
+}
+
+.ant-modal-title {
+    font-size: 32px !important;
+}
+
+.tag {
+    border-radius: 20px;
+    padding: 4px 16px;
+
+    &__skill {
+        background-color: rgba(2, 119, 255, 0.12) !important;
+        color: #0277ff !important;
+    }
+
+    &__level {
+        background-color: rgba(255, 87, 150, 0.2) !important;
+        color: #ff5796 !important;
+    }
+
+    &__high-priority {
+        background-color: transparent !important;
+        color: #ff5796 !important;
+        border: 1px solid rgba(255, 87, 150, 0.4) !important;
+    }
+
+    &__medium-priority {
+        background-color: transparent !important;
+        color: #ff9f1a !important;
+        border: 1px solid rgba(255, 159, 26, 0.4) !important;
+    }
+
+    &__low-priority {
+        background-color: transparent !important;
+        color: #ffda1a !important;
+        border: 1px solid rgba(255, 218, 26, 0.4) !important;
+    }
+}
+
+.button {
+    &_secondary {
+        background-color: rgba(2, 119, 255, 0.12) !important;
+        color: #0277ff !important;
+    }
+}
+
+.sh-select {
+    label {
+        margin-top: 10px;
+    }
+}
+
+.ticket {
+    margin-top: 20px;
+    &:first-child {
+        margin-top: 0;
+    }
+}
+
+.timeline-tile {
+    height: 40px;
+    background: #0277ff;
+    border-radius: 8px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.statistics {
+    border: 1px solid #0277ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    &__main {
+        flex-direction: column;
+        height: 150px;
+    }
+
+    &__secondary {
+        height: 110px;
+        gap: 20px;
+    }
+
+    &__title {
+        font-size: 50px;
+        color: #0277ff;
+        font-weight: 500;
+    }
+
+    &__value {
+        margin-bottom: 0 !important;
+    }
+}
