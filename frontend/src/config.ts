@@ -1,1 +1,1 @@
-export const API_URL = 'https://larek.itatmisis.ru';
+export const API_URL = 'itatmisis1.ru';

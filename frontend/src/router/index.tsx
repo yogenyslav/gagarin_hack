@@ -5,6 +5,7 @@ import UnauthorizedOnlyRoute from './UnauthorizedOnlyRoute';
 import AuthService from '../api/AuthService';
 import SignUp from '../pages/SignUp';
 import Login from '../pages/Login';
+import Report from '../pages/Report';
 
 export const router = createBrowserRouter([
     {
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
     {
         path: '/home',
         element: <Home />,
+    },
+    {
+        path: '/report/:reportId',
+        element: <Report />,
     },
     {
         path: '*',
