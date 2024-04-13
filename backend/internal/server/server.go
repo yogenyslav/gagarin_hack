@@ -56,11 +56,28 @@ func New(cfg *config.Config) *Server {
 
 func (s *Server) Run() {
 	s3 := minios3.MustNew(&s.cfg.S3)
-	if buckets, err := s3.ListBuckets(context.Background()); err != nil || len(buckets) == 0 {
-		if err = s3.CreateBuckets(context.Background()); err != nil {
-			logger.Panicf("failed to create s3 buckets: %v", err)
-		}
+	if err := s3.CreateBuckets(context.Background()); err != nil {
+		logger.Panicf("failed to create s3 buckets: %v", err)
 	}
+
+	//r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+	//	return aws.Endpoint{
+	//		URL:               s.cfg.S3.Host,
+	//		HostnameImmutable: true,
+	//		Source:            aws.EndpointSourceCustom,
+	//	}, nil
+	//})
+	//
+	//s3confifg, err := s3cfg.LoadDefaultConfig(context.Background(),
+	//	s3cfg.WithEndpointResolverWithOptions(r2Resolver),
+	//	s3cfg.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(s.cfg.S3.AccessKey, s.cfg.S3.SecretKey, "")),
+	//	s3cfg.WithRegion("ru-central1"),
+	//)
+	//if err != nil {
+	//	logger.Panic(err)
+	//}
+	//
+	//s3client := s3.NewFromConfig(s3confifg)
 
 	var grpcOpts []grpc.DialOption
 	grpcOpts = append(grpcOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -71,7 +88,7 @@ func (s *Server) Run() {
 	}
 
 	responseRepo := response.NewRepo(s.pg)
-	responseController := response.NewController(responseRepo, mlConn)
+	responseController := response.NewController(responseRepo, mlConn, s3)
 	responseHandler := response.NewHandler(responseController)
 	response.SetupResponseRoutes(s.app, responseHandler)
 

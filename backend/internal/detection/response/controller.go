@@ -2,10 +2,13 @@ package response
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"gagarin/internal/detection/response/model"
 	"gagarin/internal/pb"
 	"gagarin/internal/shared"
+	"gagarin/pkg/storage/minios3"
 
 	"github.com/yogenyslav/logger"
 	"google.golang.org/grpc"
@@ -18,14 +21,16 @@ type responseRepo interface {
 }
 
 type Controller struct {
-	repo responseRepo
-	ml   pb.MlServiceClient
+	repo     responseRepo
+	ml       pb.MlServiceClient
+	s3client *minios3.S3
 }
 
-func NewController(repo responseRepo, mlConn *grpc.ClientConn) *Controller {
+func NewController(repo responseRepo, mlConn *grpc.ClientConn, s3client *minios3.S3) *Controller {
 	return &Controller{
-		repo: repo,
-		ml:   pb.NewMlServiceClient(mlConn),
+		repo:     repo,
+		ml:       pb.NewMlServiceClient(mlConn),
+		s3client: s3client,
 	}
 }
 
@@ -87,6 +92,19 @@ func (ctrl *Controller) FindOneByQueryId(ctx context.Context, queryId int64) (mo
 		res.Anomalies[idx].Link = anomaly.GetLink()
 		res.Anomalies[idx].Class = anomaly.GetClass()
 	}
+
+	presignUrl, err := ctrl.s3client.PresignedGetObject(ctx, shared.FrameBucket, fmt.Sprintf("frame-%d.png", queryId), time.Hour*8, nil)
+	if err != nil {
+		logger.Error(err)
+		return res, err
+	}
+
+	cls, _ := shared.StringFromAnomalyClass(shared.BlurClass)
+	res.Anomalies = append(res.Anomalies, model.Anomaly{
+		Ts:    1,
+		Link:  presignUrl.String(),
+		Class: cls,
+	})
 
 	return res, nil
 }

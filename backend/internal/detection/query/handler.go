@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"gagarin/internal/detection/query/model"
 	"gagarin/internal/shared"
@@ -66,6 +67,10 @@ func (h *Handler) Stream(ctx *fiber.Ctx) error {
 	}
 	if err = h.validator.Struct(&req); err != nil {
 		return err
+	}
+
+	if !strings.HasPrefix(req.Source, "rtsp://") {
+		return shared.ErrStreamLinkInvalid
 	}
 
 	queryCreate := model.QueryCreate{

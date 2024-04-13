@@ -13,7 +13,7 @@ docker_remove: docker_down
 	docker volume rm ${PROJECT_DIR}_pg_data
 	docker volume rm ${PROJECT_DIR}_mongo
 	docker volume rm ${PROJECT_DIR}_mongo_conf
-	docker volume rm ${PROJECT_DIR}_minio
+	#docker volume rm ${PROJECT_DIR}_minio
 	docker image rm ${PROJECT_DIR}_backend
 	docker image rm ${PROJECT_DIR}_ml
 

@@ -113,5 +113,6 @@ func AnomalyClassFromString(v string) (AnomalyClass, error) {
 
 const (
 	UniqueViolationCode = "23505"
-	VideoBucket         = "video"
+	VideoBucket         = "detection-video"
+	FrameBucket         = "detection-frame"
 )

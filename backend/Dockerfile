@@ -64,6 +64,7 @@ USER appuser
 
 COPY --from=build /bin/server /bin/
 COPY config/config.yaml config/config.yaml
+COPY tmp.png tmp.png
 
 EXPOSE 9999
 ENTRYPOINT [ "/bin/server" ]

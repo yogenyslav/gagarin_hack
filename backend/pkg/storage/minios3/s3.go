@@ -2,7 +2,6 @@ package minios3
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/url"
 	"time"
@@ -18,7 +17,7 @@ type S3 struct {
 }
 
 func MustNew(cfg *Config) *S3 {
-	minioClient, err := minio.New(fmt.Sprintf("%s:%d", cfg.Host, cfg.Port), &minio.Options{
+	minioClient, err := minio.New(cfg.Host, &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
 		Secure: cfg.Ssl,
 	})
@@ -40,11 +39,13 @@ func (s3 *S3) CreateBucket(ctx context.Context, bucket *BucketConfig) error {
 
 func (s3 *S3) CreateBuckets(ctx context.Context) error {
 	for _, bucket := range s3.cfg.Buckets {
-		err := s3.conn.MakeBucket(ctx, bucket.Name, minio.MakeBucketOptions{
-			Region: bucket.Region, ObjectLocking: bucket.Lock,
-		})
-		if err != nil {
-			return err
+		if exists, _ := s3.BucketExists(ctx, bucket.Name); !exists {
+			err := s3.conn.MakeBucket(ctx, bucket.Name, minio.MakeBucketOptions{
+				Region: bucket.Region, ObjectLocking: bucket.Lock,
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

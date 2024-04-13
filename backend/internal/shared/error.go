@@ -10,6 +10,7 @@ var (
 	ErrWrongResponseStatus = errors.New("unable to match response status")
 	ErrWrongAnomalyClass   = errors.New("unable to match anomaly class")
 	ErrQueryIsNotProcessed = errors.New("query with this id is not being processed")
+	ErrStreamLinkInvalid   = errors.New("invalid stream link format")
 )
 
 // 500

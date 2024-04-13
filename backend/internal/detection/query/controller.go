@@ -3,6 +3,7 @@ package query
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 
@@ -35,9 +36,9 @@ type Controller struct {
 	qr         queryRepo
 	rc         responseController
 	ml         pb.MlServiceClient
-	s3         *minios3.S3
 	processing map[int64]context.CancelFunc
 	mu         sync.Mutex
+	s3         *minios3.S3
 }
 
 func NewController(qr queryRepo, rc responseController, mlConn *grpc.ClientConn, s3 *minios3.S3) *Controller {
@@ -59,6 +60,7 @@ func (ctrl *Controller) InsertOne(ctx context.Context, params model.QueryCreate)
 			logger.Errorf("failed to open file: %v", err)
 			return 0, err
 		}
+		defer rawFile.Close()
 
 		split := strings.Split(params.Video.Filename, ".")
 		source := fmt.Sprintf("%s%d.%s", uuid.NewString(), pkg.GetLocalTime().Unix(), split[len(split)-1])
@@ -108,6 +110,16 @@ func (ctrl *Controller) process(ctx context.Context, id int64, params model.Quer
 		if grpcErr.Code() != codes.Canceled {
 			logger.Errorf("processing query %d failed: %v", id, err)
 		}
+	}
+
+	// TODO: move it to ml-service
+	img, _ := os.Open("tmp.png")
+	info, _ := img.Stat()
+	if _, err = ctrl.s3.PutObject(ctx, shared.FrameBucket, fmt.Sprintf("frame-%d.png", id), img, info.Size(), minio.PutObjectOptions{
+		ContentType: "image/png",
+	}); err != nil {
+		logger.Error(err)
+		return
 	}
 
 	logger.Infof("processing query %d finished with status %v", id, resp.GetStatus())
