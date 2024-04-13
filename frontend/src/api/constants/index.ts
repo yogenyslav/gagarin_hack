@@ -17,6 +17,11 @@ export enum AnomalyType {
     VIDEO = 'VIDEO',
 }
 
+export enum ModelType {
+    RGB = 'RGB',
+    BYTES = 'BYTES',
+}
+
 export const anomalyClassRegistry: Record<AnomalyClass, string> = {
     [AnomalyClass.BLUR]: 'Размытие',
     [AnomalyClass.HIGHLIGHT]: 'Свет',

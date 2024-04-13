@@ -8,6 +8,7 @@ import {
     RadioChangeEvent,
     Row,
     Segmented,
+    Spin,
     Typography,
     Upload,
     message,
@@ -18,6 +19,7 @@ import { useState } from 'react';
 import { UploadOutlined } from '@ant-design/icons';
 import AnomalyApiServiceInstance from '../api/AnomalyApiService';
 import HeaderLayout from '../components/HeaderLayout';
+import { ModelType } from '../api/constants';
 
 enum ExportType {
     UploadVideo = 'Загрузить видео',
@@ -32,7 +34,7 @@ const Home = observer(() => {
     const [messageApi, contextHolder] = message.useMessage();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState<boolean>(false);
-    const [modelType, setModelType] = useState(1);
+    const [modelType, setModelType] = useState(ModelType.RGB);
 
     const onChange = (e: RadioChangeEvent) => {
         console.log('radio checked', e.target.value);
@@ -49,7 +51,7 @@ const Home = observer(() => {
 
         setLoading(true);
 
-        AnomalyApiServiceInstance.sendRTSPUrl(rtspLink)
+        AnomalyApiServiceInstance.sendRTSPUrl(rtspLink, modelType)
             .then((data) => {
                 messageApi.success('Начинается обработка файла');
 
@@ -95,21 +97,22 @@ const Home = observer(() => {
                         <Row style={{ marginTop: 20 }}>
                             <Col>
                                 <Radio.Group onChange={onChange} value={modelType}>
-                                    <Radio value={1}>Анализ байтового потока</Radio>
-                                    <Radio value={2}>Анализ в формате RGB</Radio>
+                                    <Radio value={ModelType.BYTES}>Анализ байтового потока</Radio>
+                                    <Radio value={ModelType.RGB}>Анализ в формате RGB</Radio>
                                 </Radio.Group>
                             </Col>
                         </Row>
 
                         {selectedExportType === ExportType.UploadVideo && (
                             <Row style={{ marginTop: 20 }}>
+                                <Col>{loading && <Spin />}</Col>
                                 <Col>
                                     <Upload
                                         name='file'
                                         beforeUpload={(file) => {
                                             setLoading(true);
 
-                                            AnomalyApiServiceInstance.sendVideo(file)
+                                            AnomalyApiServiceInstance.sendVideo(file, modelType)
                                                 .then((data) => {
                                                     messageApi.success(
                                                         'Начинается обработка файла'
@@ -166,13 +169,14 @@ const Home = observer(() => {
 
                         {selectedExportType === ExportType.UploadArchive && (
                             <Row style={{ marginTop: 20 }}>
+                                <Col>{loading && <Spin />}</Col>
                                 <Col>
                                     <Upload
                                         name='file'
                                         beforeUpload={(file) => {
                                             setLoading(true);
 
-                                            AnomalyApiServiceInstance.sendArchive(file)
+                                            AnomalyApiServiceInstance.sendArchive(file, modelType)
                                                 .then((data) => {
                                                     messageApi.success(
                                                         'Начинается обработка файла'
