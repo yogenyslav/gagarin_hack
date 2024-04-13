@@ -15,7 +15,7 @@ const AnomalyCard = ({ anomaly }: Props) => {
         const generateGif = () => {
             gifshot.createGIF(
                 {
-                    images: anomaly.link,
+                    images: anomaly.link.filter((_, i) => i % 5 === 0),
                     interval: 0.2, // Adjust interval as needed
                     numFrames: anomaly.link.length,
                     gifWidth: 400, // Adjust width as needed
