@@ -56,19 +56,22 @@ const Report = observer(({ reportId }: Props) => {
                         if (result.status === AnomalyStatus.PROCESSING) {
                             setTimeout(() => {
                                 fetchData();
+                                return;
                             }, 1000);
                         } else if (result.status === AnomalyStatus.ERROR) {
                             messageApi.error('Ошибка обработки файла');
+                            setIsLoading(false);
                         } else if (result.status === AnomalyStatus.SUCCESS) {
                             messageApi.success('Файл успешно обработан');
+                            setIsLoading(false);
                         } else if (result.status === AnomalyStatus.CANCELED) {
                             messageApi.info('Обработка файла отменена');
+                            setIsLoading(false);
                         }
 
                         return result;
                     })
                     .finally(() => {
-                        setIsLoading(false);
                         setIsLoadingInitially(false);
                     });
             } catch (error) {
