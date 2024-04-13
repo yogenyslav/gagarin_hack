@@ -1,5 +1,4 @@
 import {
-    Breadcrumb,
     Button,
     Col,
     Form,
@@ -63,10 +62,7 @@ const Home = observer(() => {
             <Layout>
                 <HeaderLayout />
 
-                <Content className='site-layout' style={{ padding: '0 15px' }}>
-                    <Breadcrumb style={{ margin: '16px 0' }}>
-                        <Breadcrumb.Item>Загрузка видео/трансляции</Breadcrumb.Item>
-                    </Breadcrumb>
+                <Content className='site-layout' style={{ padding: '0 15px', marginTop: 15 }}>
                     <div
                         className='content'
                         style={{ padding: 24, minHeight: 380, background: '#ffffff' }}

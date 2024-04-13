@@ -1,7 +1,9 @@
 import { Card, Skeleton, Tree } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { Anomaly } from '../api/models';
-import { AnomalyType } from '../api/constants';
+import { AnomalyType, anomalyClassRegistry } from '../api/constants';
+import { useStores } from '../hooks/useStores';
+import { observer } from 'mobx-react-lite';
 
 type Props = {
     anomalies: Anomaly[];
@@ -9,14 +11,17 @@ type Props = {
     isLoading: boolean;
 };
 
-const AnomaliesTree = ({ anomalies, anomalyType, isLoading }: Props) => {
+const AnomaliesTree = observer(({ anomalies, anomalyType, isLoading }: Props) => {
+    const { rootStore } = useStores();
+
     const getTreeData = (): DataNode[] => {
         return anomalies.map((anomaly, index) => {
             return {
                 title:
-                    anomalyType === AnomalyType.VIDEO
-                        ? `Секунда ${anomaly.ts}`
-                        : `Время: ${new Date(anomaly.ts).toLocaleTimeString()}`,
+                    (anomalyType === AnomalyType.VIDEO
+                        ? `${rootStore.convertSecondsToMinutesAndSeconds(anomaly.ts)}`
+                        : `Время: ${new Date(anomaly.ts).toLocaleTimeString()}`) +
+                    ` (${anomalyClassRegistry[anomaly.class] ?? ''})`,
                 key: index,
             };
         });
@@ -27,9 +32,11 @@ const AnomaliesTree = ({ anomalies, anomalyType, isLoading }: Props) => {
             <Card className='file-list' title='Таймкоды' bordered={true}>
                 <div>
                     <Tree
-                        onSelect={([selectedKeys]) => {
+                        onSelect={(selectedKeys) => {
                             console.log(selectedKeys);
+                            rootStore.setSelectedAnomalyId(selectedKeys.toString());
                         }}
+                        selectedKeys={rootStore.selectedAnomalyIdsArray}
                         showLine={true}
                         treeData={getTreeData()}
                     />
@@ -46,6 +53,6 @@ const AnomaliesTree = ({ anomalies, anomalyType, isLoading }: Props) => {
             </Card>
         </>
     );
-};
+});
 
 export default AnomaliesTree;
