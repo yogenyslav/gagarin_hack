@@ -36,9 +36,9 @@ type Controller struct {
 	qr         queryRepo
 	rc         responseController
 	ml         pb.MlServiceClient
+	s3         *minios3.S3
 	processing map[int64]context.CancelFunc
 	mu         sync.Mutex
-	s3         *minios3.S3
 }
 
 func NewController(qr queryRepo, rc responseController, mlConn *grpc.ClientConn, s3 *minios3.S3) *Controller {
@@ -52,7 +52,9 @@ func NewController(qr queryRepo, rc responseController, mlConn *grpc.ClientConn,
 }
 
 func (ctrl *Controller) InsertOne(ctx context.Context, params model.QueryCreate) (int64, error) {
-	var query model.Query
+	query := model.Query{
+		Type: params.Type,
+	}
 
 	if params.Type == shared.VideoType {
 		rawFile, err := params.Video.Open()
@@ -71,6 +73,8 @@ func (ctrl *Controller) InsertOne(ctx context.Context, params model.QueryCreate)
 		}
 
 		query.Source = source
+	} else if params.Type == shared.StreamType {
+		query.Source = params.Source
 	}
 
 	id, err := ctrl.qr.InsertOne(ctx, query)
