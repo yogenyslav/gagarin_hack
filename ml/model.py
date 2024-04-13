@@ -78,6 +78,13 @@ class LogReg(Model):
     def classes(self):
         return ["not_anomaly", "blur"]
 
+<<<<<<< HEAD
+=======
+import torch
+from torch import nn
+import torchvision.models as models
+from sklearn.preprocessing import LabelEncoder
+>>>>>>> 4682d7602850fc60f73cdbb9a2871e56be5055fb
 
 class ResNet(nn.Module):
     def __init__(self, n_class=2):
@@ -115,7 +122,7 @@ class DLModel(Model):
         return self._le
 
     @torch.no_grad
-    def predict(self, X: torch.Tensor) -> torch.Tensor:
+    def predict(self, X: torch.Tensor) -> np.ndarray:
         return self.le.inverse_transform(self.model(X).argmax(1))
 
     def save(self, dir: str) -> None:
