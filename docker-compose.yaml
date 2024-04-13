@@ -64,3 +64,12 @@ services:
     ports:
       - "9999:9999"
     command: ./main
+
+  frontend:
+    build:
+        context: ./frontend
+        dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    ports:
+        - "3000:5173"
