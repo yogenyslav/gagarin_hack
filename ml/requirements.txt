@@ -12,3 +12,4 @@ acapture
 aiofiles
 pymongo
 pillow
+catboost

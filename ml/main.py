@@ -17,7 +17,7 @@ from pb.detection_pb2 import (
 )
 
 from dataset import DataProcess, SignalProcess
-from model import LogReg, Model
+from model import Model, CatBoost
 from video import save_bin
 
 from miniopy_async import Minio
@@ -190,9 +190,9 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
 
 async def serve():
-    checkpoint_path = "./checkpoint"
+    checkpoint_path = "./cb_checkpoint"
 
-    model = LogReg()
+    model = CatBoost()
     model.load(checkpoint_path)
     data_process = SignalProcess()
 
