@@ -40,6 +40,7 @@ async def main():
     try:
         async for msg in consumer:
             with tempfile.TemporaryDirectory() as tmpdirname:
+                print(f"Received message: {msg.offset} {msg.key}")
                 idx = msg.value["idx"]
                 fps = msg.value["fps"]
                 query_id = msg.value["query_id"]
@@ -55,25 +56,23 @@ async def main():
                 print(f"fps = {fps}")
                 while cnt < fps - 1:
                     _, raw = cap.read()
-                    if cnt == 0 or cnt == fps - 2 or cnt == (fps - 1) // 2:
-                        frame = cv2.cvtColor(raw, cv2.IMREAD_COLOR)
-                        img = np.array(
-                            Image.open(
-                                BytesIO(cv2.imencode(".jpg", frame)[1].tobytes())
-                            )
-                        )
-                        data = BytesIO()
-                        Image.fromarray(img).save(data, "JPEG")
-                        data.seek(0)
-                        await s3.put_object(
-                            "detection-frame",
-                            f"{query_id}/{idx}_{total_frames_uploaded}.jpg",
-                            data,
-                            length=len(data.getvalue()),
-                            content_type="image/jpeg",
-                        )
-                        print(f"Uploaded {query_id}/{idx}_{total_frames_uploaded}.jpg")
-                        total_frames_uploaded += 1
+                    # if cnt == 0 or cnt == fps - 2 or cnt == (fps - 1) // 2:
+                    frame = cv2.cvtColor(raw, cv2.IMREAD_COLOR)
+                    img = np.array(
+                        Image.open(BytesIO(cv2.imencode(".jpg", frame)[1].tobytes()))
+                    )
+                    data = BytesIO()
+                    Image.fromarray(img).save(data, "JPEG")
+                    data.seek(0)
+                    s3.put_object(
+                        "detection-frame",
+                        f"{query_id}/{idx}_{total_frames_uploaded}.jpg",
+                        data,
+                        length=len(data.getvalue()),
+                        content_type="image/jpeg",
+                    )
+                    print(f"Uploaded {query_id}/{idx}_{total_frames_uploaded}.jpg")
+                    total_frames_uploaded += 1
                     cnt += 1
 
                 col.insert_one(

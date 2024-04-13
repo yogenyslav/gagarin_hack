@@ -76,8 +76,8 @@ type AnomalyClass int
 
 const (
 	BlurClass AnomalyClass = iota
-	LightClass
-	MotionClass
+	HighlightClass
+	CropClass
 	OverlapClass
 )
 
@@ -85,10 +85,10 @@ func StringFromAnomalyClass(v AnomalyClass) (string, error) {
 	switch v {
 	case BlurClass:
 		return "BLUR", nil
-	case LightClass:
-		return "LIGHT", nil
-	case MotionClass:
-		return "MOTION", nil
+	case HighlightClass:
+		return "HIGHLIGHT", nil
+	case CropClass:
+		return "CROP", nil
 	case OverlapClass:
 		return "OVERLAP", nil
 	default:
@@ -100,10 +100,10 @@ func AnomalyClassFromString(v string) (AnomalyClass, error) {
 	switch strings.ToLower(v) {
 	case "blur":
 		return BlurClass, nil
-	case "light":
-		return LightClass, nil
-	case "motion":
-		return MotionClass, nil
+	case "highlight":
+		return HighlightClass, nil
+	case "crop":
+		return CropClass, nil
 	case "overlap":
 		return OverlapClass, nil
 	default:
@@ -114,5 +114,4 @@ func AnomalyClassFromString(v string) (AnomalyClass, error) {
 const (
 	UniqueViolationCode = "23505"
 	VideoBucket         = "detection-video"
-	FrameBucket         = "detection-frame"
 )
