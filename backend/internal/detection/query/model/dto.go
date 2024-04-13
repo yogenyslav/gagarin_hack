@@ -1,7 +1,7 @@
 package model
 
 import (
-	"mime/multipart"
+	"io"
 
 	"gagarin/internal/shared"
 )
@@ -14,12 +14,18 @@ type StreamQueryReq struct {
 type QueryCreate struct {
 	Source string
 	Type   shared.QueryType
-	Video  *multipart.FileHeader
+	Video  io.Reader
 	Model  shared.ModelType
+	Name   string
+	Size   int64
 }
 
 type QueryResponse struct {
 	Id int64 `json:"id"`
+}
+
+type QueryArchiveResponse struct {
+	Ids []int64 `json:"ids"`
 }
 
 type ResultReq struct {
