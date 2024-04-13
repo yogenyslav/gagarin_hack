@@ -3,11 +3,12 @@ import { API_URL } from '../config';
 import { Result, SendArchiveResponse, SendFileOrUrlResponse } from './models';
 
 class AnomalyApiServiceInstance {
-    async sendRTSPUrl(url: string): Promise<SendFileOrUrlResponse> {
+    async sendRTSPUrl(url: string, modelType: string): Promise<SendFileOrUrlResponse> {
         const response = await axios.post<SendFileOrUrlResponse>(
             `${API_URL}/api/detection/stream`,
             {
                 source: url,
+                model: modelType,
             },
             {
                 headers: {
@@ -19,9 +20,10 @@ class AnomalyApiServiceInstance {
         return response.data;
     }
 
-    async sendVideo(file: File): Promise<SendFileOrUrlResponse> {
+    async sendVideo(file: File, modelType: string): Promise<SendFileOrUrlResponse> {
         const formData = new FormData();
         formData.append('source', file);
+        formData.append('model', modelType);
 
         const response = await axios.post<SendFileOrUrlResponse>(
             `${API_URL}/api/detection/video`,
@@ -37,9 +39,10 @@ class AnomalyApiServiceInstance {
         return response.data;
     }
 
-    async sendArchive(file: File): Promise<SendArchiveResponse> {
+    async sendArchive(file: File, modelType: string): Promise<SendArchiveResponse> {
         const formData = new FormData();
         formData.append('source', file);
+        formData.append('model', modelType);
 
         const response = await axios.post<SendArchiveResponse>(
             `${API_URL}/api/detection/archive`,
