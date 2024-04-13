@@ -110,6 +110,7 @@ const Home = observer(() => {
                                     <Upload
                                         disabled={loading}
                                         name='file'
+                                        accept='.mp4'
                                         beforeUpload={(file) => {
                                             setLoading(true);
 
@@ -175,6 +176,7 @@ const Home = observer(() => {
                                     <Upload
                                         disabled={loading}
                                         name='file'
+                                        accept='.zip'
                                         beforeUpload={(file) => {
                                             setLoading(true);
 
