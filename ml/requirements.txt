@@ -14,3 +14,4 @@ pillow
 catboost
 aiokafka
 torch
+torchvision

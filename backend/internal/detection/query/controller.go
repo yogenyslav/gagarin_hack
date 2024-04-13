@@ -52,7 +52,8 @@ func NewController(qr queryRepo, rc responseController, mlConn *grpc.ClientConn,
 
 func (ctrl *Controller) InsertOne(ctx context.Context, params model.QueryCreate) (int64, error) {
 	query := model.Query{
-		Type: params.Type,
+		Type:  params.Type,
+		Model: params.Model,
 	}
 
 	if params.Type == shared.VideoType {
@@ -121,6 +122,11 @@ func (ctrl *Controller) process(ctx context.Context, id int64, params model.Quer
 	if err != nil {
 		logger.Warnf("%v", err)
 		return
+	}
+
+	if s == shared.ProcessingStatus {
+		logger.Warnf("unexpected status: %v", s)
+		s = shared.ErrorStatus
 	}
 
 	if err = ctrl.rc.UpdateOne(withCancel, respmodel.QueryResponseUpdate{
