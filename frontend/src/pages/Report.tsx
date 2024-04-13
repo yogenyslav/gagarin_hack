@@ -1,5 +1,4 @@
 import {
-    Breadcrumb,
     Button,
     Card,
     Col,
@@ -29,6 +28,7 @@ import {
 import AnomaliesTree from '../components/AnomaliesTree';
 import AnomalyCard from '../components/AnomalyCard';
 import AnomalyTypesChart from '../components/AnomalyTypesChart';
+import { useStores } from '../hooks/useStores';
 
 const Report = observer(() => {
     const { reportId } = useParams();
@@ -37,8 +37,11 @@ const Report = observer(() => {
     const [isLoadingInitially, setIsLoadingInitially] = useState<boolean>(true);
     const [messageApi, contextHolder] = message.useMessage();
     const [isCancelLoading, setIsCancelLoading] = useState<boolean>(false);
+    const { rootStore } = useStores();
 
     useEffect(() => {
+        rootStore.clearSelectedAnomalyIds();
+
         const fetchData = async () => {
             try {
                 if (!reportId) {
@@ -75,7 +78,7 @@ const Report = observer(() => {
         };
 
         fetchData();
-    }, [reportId, messageApi]);
+    }, [reportId, messageApi, rootStore]);
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(`${window.location.origin}/report/${reportId}`);
@@ -92,7 +95,7 @@ const Report = observer(() => {
                 key: index,
                 label:
                     (result.type === AnomalyType.VIDEO
-                        ? `Секунда ${anomaly.ts}`
+                        ? `${rootStore.convertSecondsToMinutesAndSeconds(anomaly.ts)}`
                         : `Время: ${new Date(anomaly.ts).toLocaleTimeString()}`) +
                         '. Тип аномалии: ' +
                         anomalyClassRegistry[anomaly.class] ?? 'Неизвестный тип',
@@ -159,10 +162,7 @@ const Report = observer(() => {
             <Layout>
                 <HeaderLayout />
 
-                <Content className='site-layout' style={{ padding: '0 15px' }}>
-                    <Breadcrumb style={{ margin: '16px 0' }}>
-                        <Breadcrumb.Item>Отчет</Breadcrumb.Item>
-                    </Breadcrumb>
+                <Content className='site-layout' style={{ padding: '0 15px', marginTop: 15 }}>
                     <div
                         className='content'
                         style={{ padding: 24, minHeight: 380, background: '#ffffff' }}
@@ -269,8 +269,12 @@ const Report = observer(() => {
                                         <Col xs={{ span: 24 }} lg={{ span: 18 }}>
                                             <Collapse
                                                 defaultActiveKey={['1']}
+                                                activeKey={rootStore.selectedAnomalyIdsArray}
                                                 expandIconPosition={'start'}
                                                 items={getItems()}
+                                                onChange={(selectedKeys) => {
+                                                    rootStore.setSelectedAnomalyIds(selectedKeys);
+                                                }}
                                             />
                                         </Col>
                                     </Row>
