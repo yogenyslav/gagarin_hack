@@ -57,16 +57,9 @@ func (ctrl *Controller) InsertOne(ctx context.Context, params model.QueryCreate)
 	}
 
 	if params.Type == shared.VideoType {
-		rawFile, err := params.Video.Open()
-		if err != nil {
-			logger.Errorf("failed to open file: %v", err)
-			return 0, err
-		}
-		defer rawFile.Close()
-
-		split := strings.Split(params.Video.Filename, ".")
+		split := strings.Split(params.Name, ".")
 		source := fmt.Sprintf("%s%d.%s", uuid.NewString(), pkg.GetLocalTime().Unix(), split[len(split)-1])
-		_, err = ctrl.s3.PutObject(ctx, shared.VideoBucket, source, rawFile, params.Video.Size, minio.PutObjectOptions{})
+		_, err := ctrl.s3.PutObject(ctx, shared.VideoBucket, source, params.Video, params.Size, minio.PutObjectOptions{})
 		if err != nil {
 			logger.Errorf("failed to put file into s3: %v", err)
 			return 0, shared.ErrInsertRecord
