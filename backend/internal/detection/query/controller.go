@@ -106,6 +106,8 @@ func (ctrl *Controller) process(ctx context.Context, id int64, params model.Quer
 		grpcErr := status.Convert(err)
 		if grpcErr.Code() != codes.Canceled {
 			logger.Errorf("processing query %d failed: %v", id, err)
+		} else {
+			logger.Infof("processing query %d canceled", id)
 		}
 	}
 
@@ -122,7 +124,7 @@ func (ctrl *Controller) process(ctx context.Context, id int64, params model.Quer
 		s = shared.ErrorStatus
 	}
 
-	if err = ctrl.rc.UpdateOne(withCancel, respmodel.QueryResponseUpdate{
+	if err = ctrl.rc.UpdateOne(context.Background(), respmodel.QueryResponseUpdate{
 		QueryId: id,
 		Status:  s,
 	}); err != nil {
