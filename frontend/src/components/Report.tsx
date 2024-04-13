@@ -225,26 +225,26 @@ const Report = observer(({ reportId }: Props) => {
                                             </Button>
                                         </Col>
                                     </Row>
-                                ) : (
-                                    (result && result.status === AnomalyStatus.SUCCESS) ||
-                                    (result.status === AnomalyStatus.CANCELED && (
-                                        <Row gutter={[16, 16]}>
-                                            <Col>
-                                                <Button onClick={() => copyToClipboard()}>
-                                                    Скопировать ссылку на отчет
-                                                </Button>
-                                            </Col>
+                                ) : result.status === AnomalyStatus.SUCCESS ||
+                                  result.status === AnomalyStatus.CANCELED ? (
+                                    <Row gutter={[16, 16]}>
+                                        <Col>
+                                            <Button onClick={() => copyToClipboard()}>
+                                                Скопировать ссылку на отчет
+                                            </Button>
+                                        </Col>
 
-                                            <Col>
-                                                <Button
-                                                    onClick={() => downloadCsvReport()}
-                                                    type='primary'
-                                                >
-                                                    Скачать отчет (.csv)
-                                                </Button>
-                                            </Col>
-                                        </Row>
-                                    ))
+                                        <Col>
+                                            <Button
+                                                onClick={() => downloadCsvReport()}
+                                                type='primary'
+                                            >
+                                                Скачать отчет (.csv)
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                ) : (
+                                    ''
                                 )}
                             </Col>
                         </Row>
