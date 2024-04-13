@@ -6,7 +6,6 @@ import ffmpeg
 import grpc
 import pb.detection_pb2_grpc
 from dotenv import load_dotenv
-from grpc import ServicerContext
 
 from pb.detection_pb2 import (
     Query,
@@ -26,7 +25,9 @@ import pymongo
 import cv2
 import aiofiles
 import asyncio
-import acapture
+import numpy as np
+from PIL import Image
+from io import BytesIO
 
 
 load_dotenv(".env")
@@ -38,9 +39,10 @@ s3 = Minio(
     secure=True,
 )
 
-mongo_client = pymongo.MongoClient(
-    f"mongodb://{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/{os.getenv('MONGO_DB')}"
-)
+mongo_url = f"mongodb://{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/{os.getenv('MONGO_DB')}"
+print(f"mongo_url = {mongo_url}")
+mongo_client = pymongo.MongoClient(mongo_url)
+col = mongo_client.get_database(os.getenv("MONGO_DB")).get_collection("anomalies")
 
 
 class MlService(pb.detection_pb2_grpc.MlServiceServicer):
@@ -66,31 +68,41 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
             ) as f:
                 await f.write(data)
 
-            cap = acapture.open(f"{tmpdirname}/anomaly_frames_{query_id}.h264")
+            cap = cv2.VideoCapture(f"{tmpdirname}/anomaly_frames_{query_id}.h264")
             cnt = 0
-            while cnt <= fps:
+            total_frames_uploaded = 0
+            print(f"fps = {fps}")
+            while cnt < fps - 1:
                 _, raw = cap.read()
-                frame = cv2.cvtColor(raw, cv2.IMREAD_COLOR)
-                img_bytes = cv2.imencode(".jpg", frame)[1].tobytes()
-                await s3.put_object(
-                    "detection-frame",
-                    f"{query_id}/{idx}_{cnt}.jpg",
-                    img_bytes,
-                    length=len(img_bytes),
-                    content_type="image/jpeg",
-                )
+                if cnt == 0 or cnt == fps - 2 or cnt == (fps - 1) // 2:
+                    frame = cv2.cvtColor(raw, cv2.IMREAD_COLOR)
+                    img = np.array(
+                        Image.open(BytesIO(cv2.imencode(".jpg", frame)[1].tobytes()))
+                    )
+                    data = BytesIO()
+                    Image.fromarray(img).save(data, "JPEG")
+                    data.seek(0)
+                    await s3.put_object(
+                        "detection-frame",
+                        f"{query_id}/{idx}_{total_frames_uploaded}.jpg",
+                        data,
+                        length=len(data.getvalue()),
+                        content_type="image/jpeg",
+                    )
+                    print(f"Uploaded {query_id}/{idx}_{total_frames_uploaded}.jpg")
+                    total_frames_uploaded += 1
                 cnt += 1
 
-        mongo_client.get_database(os.getenv("MONGO_DB")).get_collection(
-            "anomalies"
-        ).insert_one(
-            {
-                "query_id": query_id,
-                "ts": idx,
-                "cls": label,
-                "cnt": cnt,
-            }
-        )
+            print(f"pupupu")
+            col.insert_one(
+                {
+                    "query_id": query_id,
+                    "ts": idx,
+                    "cls": label,
+                    "cnt": total_frames_uploaded,
+                }
+            )
+            print(f"Inserted anomaly {query_id}/{idx}_{total_frames_uploaded}")
 
     async def detect_frame_anomaly(
         self, url: str, tmpdirname: str, idx: int, fps: int, query_id: int
@@ -104,6 +116,7 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
         label = self._model.decode_label(label)
 
+        print(f"Anomaly detected at {idx} with label {label}")
         await asyncio.create_task(
             self._save_frame(bin_path, tmpdirname, idx, query_id, fps, label)
         )
@@ -115,7 +128,7 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
         url = query.source
         if not query.source.startswith("rtsp"):
-            url = s3.presigned_get_object("detection-video", query.source)
+            url = await s3.presigned_get_object("detection-video", query.source)
         print(f"url = {url}")
 
         probe = ffmpeg.probe(url)
@@ -131,7 +144,7 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             for idx in frames_to_read:
-                if context.is_active():
+                if context.cancelled():
                     return Response(status=ResponseStatus.Canceled)
 
                 try:
@@ -148,7 +161,7 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
                 anomalies.append(anomaly)
 
             # tmpdirname.cleanup()
-
+        print("finished processing")
         return Response(status=ResponseStatus.Success)
 
     async def FindResult(self, query: ResultReq, context: grpc.aio.ServicerContext):
@@ -161,12 +174,12 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
         )
 
         for anomaly in anomalies:
-            a = Anomaly(ts=anomaly["ts"], cls=anomaly["class"])
+            a = Anomaly(ts=anomaly["ts"], cls=anomaly["cls"])
 
             links = []
             for i in range(anomaly["cnt"]):
-                await links.append(
-                    s3.presigned_get_object(
+                links.append(
+                    await s3.presigned_get_object(
                         "detection-frame", f"{query.id}/{anomaly['ts']}_{i}.jpg"
                     )
                 )

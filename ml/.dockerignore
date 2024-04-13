@@ -4,13 +4,14 @@
 # For more help, visit the .dockerignore file reference guide at
 # https://docs.docker.com/engine/reference/builder/#dockerignore-file
 
+final_dataset
+Train
 *.ipynb
 **/.DS_Store
 **/__pycache__
 **/venv
 **/.classpath
 **/.dockerignore
-**/.env
 **/.git
 **/.gitignore
 **/.project

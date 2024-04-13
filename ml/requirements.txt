@@ -10,3 +10,5 @@ python-dotenv
 opencv-python
 acapture
 aiofiles
+pymongo
+pillow
