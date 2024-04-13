@@ -23,8 +23,8 @@ message ResultReq {
 
 message Anomaly {
   int64 ts = 1;
-  string link = 2;
-  string class = 3;
+  repeated string links = 2;
+  string cls = 3;
 }
 
 message ResultResp {

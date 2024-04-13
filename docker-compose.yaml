@@ -4,7 +4,6 @@ volumes:
   pg_data:
   mongo:
   mongo_conf:
-#  minio:
 
 services:
   ml:
@@ -15,18 +14,6 @@ services:
     image: ${PROJECT_DIR}_ml
     ports:
       - "10000:10000"
-
-#  minio:
-#    image: minio/minio
-#    ports:
-#      - "9000:9000"
-#      - "9001:9001"
-#    volumes:
-#      - minio:/data
-#    environment:
-#      MINIO_ROOT_USER: ${MINIO_USER}
-#      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
-#    command: server --console-address ":9001" /data
 
   mongo:
     image: mongo:5.0
@@ -55,12 +42,11 @@ services:
       dockerfile: Dockerfile
       target: final
     restart: always
-    image: ${PROJECT_DIR}_api
+    image: ${PROJECT_DIR}_backend
     depends_on:
       - pg
       - mongo
       - ml
-#      - minio
     ports:
       - "9999:9999"
     command: ./main

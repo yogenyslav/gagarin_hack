@@ -2,8 +2,6 @@ package response
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	"gagarin/internal/detection/response/model"
 	"gagarin/internal/pb"
@@ -89,22 +87,9 @@ func (ctrl *Controller) FindOneByQueryId(ctx context.Context, queryId int64) (mo
 	res.Anomalies = make([]model.Anomaly, len(anomalies))
 	for idx, anomaly := range anomalies {
 		res.Anomalies[idx].Ts = anomaly.GetTs()
-		res.Anomalies[idx].Link = anomaly.GetLink()
-		res.Anomalies[idx].Class = anomaly.GetClass()
+		res.Anomalies[idx].Links = anomaly.GetLinks()
+		res.Anomalies[idx].Cls = anomaly.GetCls()
 	}
-
-	presignUrl, err := ctrl.s3client.PresignedGetObject(ctx, shared.FrameBucket, fmt.Sprintf("frame-%d.png", queryId), time.Hour*8, nil)
-	if err != nil {
-		logger.Error(err)
-		return res, err
-	}
-
-	cls, _ := shared.StringFromAnomalyClass(shared.BlurClass)
-	res.Anomalies = append(res.Anomalies, model.Anomaly{
-		Ts:    1,
-		Link:  presignUrl.String(),
-		Class: cls,
-	})
 
 	return res, nil
 }

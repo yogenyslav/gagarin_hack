@@ -14,9 +14,9 @@ type QueryResponseUpdate struct {
 }
 
 type Anomaly struct {
-	Ts    int64  `json:"ts"`
-	Link  string `json:"link"`
-	Class string `json:"class"`
+	Ts    int64    `json:"ts"`
+	Links []string `json:"link"`
+	Cls   string   `json:"class"`
 }
 
 type ResultResponseDto struct {

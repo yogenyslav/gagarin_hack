@@ -5,3 +5,7 @@ config.yaml
 backend/s3.json
 venv
 backend/tmp.png
+Train
+final_dataset
+new_capture.mp4
+checkpoint
