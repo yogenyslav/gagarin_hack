@@ -9,3 +9,5 @@ Train
 final_dataset
 new_capture.mp4
 checkpoint
+__pycache__
+client.py
