@@ -13,3 +13,4 @@ pymongo
 pillow
 catboost
 aiokafka
+torch

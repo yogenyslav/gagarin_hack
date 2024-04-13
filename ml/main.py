@@ -60,8 +60,6 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
         if label == "normal":
             return {}
 
-        label = self._model.decode_label(label)[0]
-
         print(f"Anomaly detected at {idx} with label {label}")
 
         producer = aiokafka.AIOKafkaProducer(

@@ -1,21 +1,66 @@
 import abc
+import os
+from pathlib import Path
 
+import cv2
+import torch
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
 from scipy.signal import medfilt
-
+from torchvision import transforms
 
 class DataProcess(abc.ABC):
-    @abc.abstractmethod
-    def prepare_data(self, raw_data: np.ndarray) -> pd.DataFrame:
-        pass
-
     @abc.abstractmethod
     def prepare_from_bin(self, bin_path: str) -> pd.DataFrame:
         pass
 
+class ResNetProcess(DataProcess):
+    def __init__(self) -> None:
+        self.transform = transforms.Compose(
+                [
+                    transforms.ToTensor(),
+                    transforms.Resize(224),
+                    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+                ])
+        
+    def prepare_from_bin(self, bin_path: str) -> pd.DataFrame:
+        path = bin_path
+        target_path = path.replace('bin', 'h264')
 
+        # Копирование файла с изменением формата
+        if not Path(target_path).exists():
+            with open(path, 'rb') as f:
+                data = f.read()
+                with open(target_path, 'wb') as f:
+                    
+                    f.write(data)
+        
+        # Чтение видео
+        video = cv2.VideoCapture(target_path)
+        seq = []
+        cnt = 0
+        while cnt < 2:
+            ret, frame = video.read()
+            if not ret:
+                break
+            
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Преобразование в RGB
+            frame = cv2.resize(frame, (384, 384), interpolation=cv2.INTER_AREA)
+            if self.transform:
+                frame = self.transform(frame)
+            else:
+                frame = torch.from_numpy(frame)
+            seq.append(frame)
+            cnt += 1
+        
+        video.release()
+        os.remove(target_path)  # Удаление временного файла
+        
+        seq = torch.stack(seq, dim=0)
+        return seq[None]
+    
 class SignalProcess(DataProcess):
     def __init__(
         self,
