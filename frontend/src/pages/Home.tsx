@@ -104,10 +104,11 @@ const Home = observer(() => {
                         </Row>
 
                         {selectedExportType === ExportType.UploadVideo && (
-                            <Row style={{ marginTop: 20 }}>
+                            <Row gutter={[16, 16]} align={'middle'} style={{ marginTop: 20 }}>
                                 <Col>{loading && <Spin />}</Col>
                                 <Col>
                                     <Upload
+                                        disabled={loading}
                                         name='file'
                                         beforeUpload={(file) => {
                                             setLoading(true);
@@ -168,10 +169,11 @@ const Home = observer(() => {
                         )}
 
                         {selectedExportType === ExportType.UploadArchive && (
-                            <Row style={{ marginTop: 20 }}>
+                            <Row gutter={[16, 16]} align={'middle'} style={{ marginTop: 20 }}>
                                 <Col>{loading && <Spin />}</Col>
                                 <Col>
                                     <Upload
+                                        disabled={loading}
                                         name='file'
                                         beforeUpload={(file) => {
                                             setLoading(true);
