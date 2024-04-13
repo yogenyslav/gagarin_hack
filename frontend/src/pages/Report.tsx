@@ -28,6 +28,7 @@ import {
 } from '../api/constants';
 import AnomaliesTree from '../components/AnomaliesTree';
 import AnomalyCard from '../components/AnomalyCard';
+import AnomalyTypesChart from '../components/AnomalyTypesChart';
 
 const Report = observer(() => {
     const { reportId } = useParams();
@@ -274,6 +275,21 @@ const Report = observer(() => {
                                         </Col>
                                     </Row>
                                 </div>
+                            )}
+
+                            {result && result.status === AnomalyStatus.SUCCESS && (
+                                <>
+                                    <Row style={{ marginTop: 40 }}>
+                                        <Typography.Title level={4}>
+                                            Статистика по аномалиям
+                                        </Typography.Title>
+                                    </Row>
+                                    <Row style={{ marginTop: 20 }}>
+                                        <Col xs={{ span: 24 }} style={{ maxHeight: 400 }}>
+                                            <AnomalyTypesChart anomalies={result.anomalies} />.
+                                        </Col>
+                                    </Row>
+                                </>
                             )}
                         </Spin>
                     </div>
