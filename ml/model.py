@@ -83,7 +83,7 @@ class ResNet(nn.Module):
     def __init__(self, n_class=2):
         super(ResNet, self).__init__()
 
-        self.resnet = models.resnet18(pretrained=True)
+        self.resnet = models.resnet18(pretrained=False)
         self.resnet.fc = torch.nn.Identity()
 
         self.fc = nn.Sequential(
@@ -136,7 +136,7 @@ class DLModel(Model):
     def load(self, dir: str) -> None:
         dir = Path(dir)
         with open(dir / "model.pt", "rb") as f:
-            self.model.load_state_dict(torch.load(f))
+            self.model.load_state_dict(torch.load(f, map_location=torch.device("cpu")))
 
         with open(dir / "le.pkl", "rb") as f:
             self._le = pickle.load(f)
