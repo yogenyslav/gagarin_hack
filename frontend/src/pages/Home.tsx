@@ -4,6 +4,8 @@ import {
     Form,
     Input,
     Layout,
+    Radio,
+    RadioChangeEvent,
     Row,
     Segmented,
     Typography,
@@ -30,6 +32,12 @@ const Home = observer(() => {
     const [messageApi, contextHolder] = message.useMessage();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState<boolean>(false);
+    const [modelType, setModelType] = useState(1);
+
+    const onChange = (e: RadioChangeEvent) => {
+        console.log('radio checked', e.target.value);
+        setModelType(e.target.value);
+    };
 
     const uploadRTSPLink = () => {
         const { rtspLink } = form.getFieldsValue();
@@ -81,6 +89,15 @@ const Home = observer(() => {
                                     onChange={(value) => setSelectedExportType(value as ExportType)}
                                     defaultChecked={true}
                                 />
+                            </Col>
+                        </Row>
+
+                        <Row style={{ marginTop: 20 }}>
+                            <Col>
+                                <Radio.Group onChange={onChange} value={modelType}>
+                                    <Radio value={1}>Анализ байтового потока</Radio>
+                                    <Radio value={2}>Анализ в формате RGB</Radio>
+                                </Radio.Group>
                             </Col>
                         </Row>
 

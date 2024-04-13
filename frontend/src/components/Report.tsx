@@ -75,6 +75,11 @@ const Report = observer(({ reportId }: Props) => {
                         setIsLoadingInitially(false);
                     });
             } catch (error) {
+                setIsLoading(false);
+                if (result) {
+                    result.status = AnomalyStatus.ERROR;
+                }
+                messageApi.error('Ошибка загрузки данных');
                 console.error(error);
             }
         };
