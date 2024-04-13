@@ -1,0 +1,6 @@
+.idea
+config.yaml
+.env
+.DS_Store
+backend/s3.json
+venv

@@ -1,0 +1,37 @@
+syntax = "proto3";
+package detection;
+
+message Query {
+  int64 id = 1;
+  string source = 2;
+}
+
+enum ResponseStatus {
+  Processing = 0;
+  Success = 1;
+  Error = 2;
+  Canceled = 3;
+}
+
+message Response {
+  ResponseStatus status = 1;
+}
+
+message ResultReq {
+  int64 id = 1;
+}
+
+message Anomaly {
+  int64 ts = 1;
+  string link = 2;
+  string class = 3;
+}
+
+message ResultResp {
+  repeated Anomaly anomalies = 1;
+}
+
+service MlService {
+  rpc Process(Query) returns (Response) {}
+  rpc FindResult(ResultReq) returns (ResultResp) {}
+}
