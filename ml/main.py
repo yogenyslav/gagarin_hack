@@ -49,12 +49,6 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
         self._model = model
         self._data_process = data_process
-        self.producer = aiokafka.AIOKafkaProducer(
-            bootstrap_servers=os.getenv("KAFKA_HOST"),
-            value_serializer=lambda x: json.dumps(x).encode(encoding="utf-8"),
-            acks="all",
-            enable_idempotence=True,
-        )
 
     async def detect_frame_anomaly(
         self, url: str, tmpdirname: str, idx: int, fps: int, query_id: int
@@ -63,26 +57,36 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
         X = self._data_process.prepare_from_bin(bin_path).to_numpy()
         label = self._model.predict(X)[0]
 
-        if label == 0:
+        if label == "normal":
             return {}
 
-        label = self._model.decode_label(label)
+        label = self._model.decode_label(label)[0]
 
         print(f"Anomaly detected at {idx} with label {label}")
 
-        async with aiofiles.open(bin_path, "rb") as bin_f:
-            data = await bin_f.read()
-            data = base64.b64encode(data).decode("utf-8")
-            await self.producer.send_and_wait(
-                "anomalies",
-                {
-                    "idx": idx,
-                    "cls": label,
-                    "fps": fps,
-                    "query_id": query_id,
-                    "data": data,
-                },
-            )
+        producer = aiokafka.AIOKafkaProducer(
+            bootstrap_servers=os.getenv("KAFKA_HOST"),
+            value_serializer=lambda x: json.dumps(x).encode(encoding="utf-8"),
+            acks="all",
+            enable_idempotence=True,
+        )
+        await producer.start()
+        try:
+            async with aiofiles.open(bin_path, "rb") as bin_f:
+                data = await bin_f.read()
+                data = base64.b64encode(data).decode("utf-8")
+                await producer.send_and_wait(
+                    "anomalies",
+                    {
+                        "idx": idx,
+                        "cls": label,
+                        "fps": fps,
+                        "query_id": query_id,
+                        "data": data,
+                    },
+                )
+        finally:
+            await producer.stop()
 
         return {"ts": idx, "class": label}
 
@@ -91,7 +95,7 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
         url = query.source
         if not query.source.startswith("rtsp"):
-            url = await s3.presigned_get_object("detection-video", query.source)
+            url = s3.presigned_get_object("detection-video", query.source)
         print(f"url = {url}")
 
         probe = ffmpeg.probe(url)
@@ -142,7 +146,7 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
             links = []
             for i in range(anomaly["cnt"]):
                 links.append(
-                    await s3.presigned_get_object(
+                    s3.presigned_get_object(
                         "detection-frame", f"{query.id}/{anomaly['ts']}_{i}.jpg"
                     )
                 )
