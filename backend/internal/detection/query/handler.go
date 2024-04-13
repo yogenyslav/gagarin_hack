@@ -41,9 +41,16 @@ func (h *Handler) Video(ctx *fiber.Ctx) error {
 		return err
 	}
 
+	m := ctx.FormValue("model")
+	modelType, err := shared.ModelTypeFromString(m)
+	if err != nil {
+		return err
+	}
+
 	req := model.QueryCreate{
 		Type:  shared.VideoType,
 		Video: file,
+		Model: modelType,
 	}
 	queryId, err = h.controller.InsertOne(ctx.Context(), req)
 	if err != nil {
@@ -73,9 +80,16 @@ func (h *Handler) Stream(ctx *fiber.Ctx) error {
 		return shared.ErrStreamLinkInvalid
 	}
 
+	m := req.Model
+	modelType, err := shared.ModelTypeFromString(m)
+	if err != nil {
+		return err
+	}
+
 	queryCreate := model.QueryCreate{
 		Source: req.Source,
 		Type:   shared.StreamType,
+		Model:  modelType,
 	}
 	queryId, err = h.controller.InsertOne(ctx.Context(), queryCreate)
 	if err != nil {

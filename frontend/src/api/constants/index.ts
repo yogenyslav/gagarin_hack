@@ -1,7 +1,7 @@
 export enum AnomalyClass {
     BLUR = 'BLUR',
-    LIGHT = 'LIGHT',
-    MOTION = 'MOTION',
+    HIGHLIGHT = 'HIGHLIGHT',
+    CROP = 'CROP',
     OVERLAP = 'OVERLAP',
 }
 
@@ -17,10 +17,15 @@ export enum AnomalyType {
     VIDEO = 'VIDEO',
 }
 
+export enum ModelType {
+    RGB = 'RGB',
+    BYTES = 'BYTES',
+}
+
 export const anomalyClassRegistry: Record<AnomalyClass, string> = {
     [AnomalyClass.BLUR]: 'Размытие',
-    [AnomalyClass.LIGHT]: 'Свет',
-    [AnomalyClass.MOTION]: 'Движение',
+    [AnomalyClass.HIGHLIGHT]: 'Свет',
+    [AnomalyClass.CROP]: 'Движение',
     [AnomalyClass.OVERLAP]: 'Перекрытие',
 };
 
