@@ -18,7 +18,7 @@ from pb.detection_pb2 import (
 )
 
 from dataset import DataProcess, SignalProcess
-from model import Model, CatBoost
+from model import Model, CatBoost, DLModel
 from video import save_bin
 
 from minio import Minio
@@ -181,8 +181,8 @@ async def serve():
     cb_model.load(cb_checkpoint_path)
     data_process = SignalProcess()
 
-    resnet_model = CatBoost()
-    resnet_model.load(cb_checkpoint_path)
+    resnet_model = DLModel()
+    resnet_model.load(resnet_checkpoint_path)
 
     s = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
     pb.detection_pb2_grpc.add_MlServiceServicer_to_server(
