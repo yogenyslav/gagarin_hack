@@ -6,24 +6,33 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class Model(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    Rgb: _ClassVar[Model]
+    Bytes: _ClassVar[Model]
+
 class ResponseStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     Processing: _ClassVar[ResponseStatus]
     Success: _ClassVar[ResponseStatus]
     Error: _ClassVar[ResponseStatus]
     Canceled: _ClassVar[ResponseStatus]
+Rgb: Model
+Bytes: Model
 Processing: ResponseStatus
 Success: ResponseStatus
 Error: ResponseStatus
 Canceled: ResponseStatus
 
 class Query(_message.Message):
-    __slots__ = ("id", "source")
+    __slots__ = ("id", "source", "model")
     ID_FIELD_NUMBER: _ClassVar[int]
     SOURCE_FIELD_NUMBER: _ClassVar[int]
+    MODEL_FIELD_NUMBER: _ClassVar[int]
     id: int
     source: str
-    def __init__(self, id: _Optional[int] = ..., source: _Optional[str] = ...) -> None: ...
+    model: Model
+    def __init__(self, id: _Optional[int] = ..., source: _Optional[str] = ..., model: _Optional[_Union[Model, str]] = ...) -> None: ...
 
 class Response(_message.Message):
     __slots__ = ("status",)

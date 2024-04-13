@@ -14,25 +14,27 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x64\x65tection.proto\x12\tdetection\"#\n\x05Query\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0e\n\x06source\x18\x02 \x01(\t\"5\n\x08Response\x12)\n\x06status\x18\x01 \x01(\x0e\x32\x19.detection.ResponseStatus\"\x17\n\tResultReq\x12\n\n\x02id\x18\x01 \x01(\x03\"1\n\x07\x41nomaly\x12\n\n\x02ts\x18\x01 \x01(\x03\x12\r\n\x05links\x18\x02 \x03(\t\x12\x0b\n\x03\x63ls\x18\x03 \x01(\t\"3\n\nResultResp\x12%\n\tanomalies\x18\x01 \x03(\x0b\x32\x12.detection.Anomaly*F\n\x0eResponseStatus\x12\x0e\n\nProcessing\x10\x00\x12\x0b\n\x07Success\x10\x01\x12\t\n\x05\x45rror\x10\x02\x12\x0c\n\x08\x43\x61nceled\x10\x03\x32|\n\tMlService\x12\x32\n\x07Process\x12\x10.detection.Query\x1a\x13.detection.Response\"\x00\x12;\n\nFindResult\x12\x14.detection.ResultReq\x1a\x15.detection.ResultResp\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0f\x64\x65tection.proto\x12\tdetection\"D\n\x05Query\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x1f\n\x05model\x18\x03 \x01(\x0e\x32\x10.detection.Model\"5\n\x08Response\x12)\n\x06status\x18\x01 \x01(\x0e\x32\x19.detection.ResponseStatus\"\x17\n\tResultReq\x12\n\n\x02id\x18\x01 \x01(\x03\"1\n\x07\x41nomaly\x12\n\n\x02ts\x18\x01 \x01(\x03\x12\r\n\x05links\x18\x02 \x03(\t\x12\x0b\n\x03\x63ls\x18\x03 \x01(\t\"3\n\nResultResp\x12%\n\tanomalies\x18\x01 \x03(\x0b\x32\x12.detection.Anomaly*\x1b\n\x05Model\x12\x07\n\x03Rgb\x10\x00\x12\t\n\x05\x42ytes\x10\x01*F\n\x0eResponseStatus\x12\x0e\n\nProcessing\x10\x00\x12\x0b\n\x07Success\x10\x01\x12\t\n\x05\x45rror\x10\x02\x12\x0c\n\x08\x43\x61nceled\x10\x03\x32|\n\tMlService\x12\x32\n\x07Process\x12\x10.detection.Query\x1a\x13.detection.Response\"\x00\x12;\n\nFindResult\x12\x14.detection.ResultReq\x1a\x15.detection.ResultResp\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'detection_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
-  _globals['_RESPONSESTATUS']._serialized_start=251
-  _globals['_RESPONSESTATUS']._serialized_end=321
+  _globals['_MODEL']._serialized_start=284
+  _globals['_MODEL']._serialized_end=311
+  _globals['_RESPONSESTATUS']._serialized_start=313
+  _globals['_RESPONSESTATUS']._serialized_end=383
   _globals['_QUERY']._serialized_start=30
-  _globals['_QUERY']._serialized_end=65
-  _globals['_RESPONSE']._serialized_start=67
-  _globals['_RESPONSE']._serialized_end=120
-  _globals['_RESULTREQ']._serialized_start=122
-  _globals['_RESULTREQ']._serialized_end=145
-  _globals['_ANOMALY']._serialized_start=147
-  _globals['_ANOMALY']._serialized_end=196
-  _globals['_RESULTRESP']._serialized_start=198
-  _globals['_RESULTRESP']._serialized_end=249
-  _globals['_MLSERVICE']._serialized_start=323
-  _globals['_MLSERVICE']._serialized_end=447
+  _globals['_QUERY']._serialized_end=98
+  _globals['_RESPONSE']._serialized_start=100
+  _globals['_RESPONSE']._serialized_end=153
+  _globals['_RESULTREQ']._serialized_start=155
+  _globals['_RESULTREQ']._serialized_end=178
+  _globals['_ANOMALY']._serialized_start=180
+  _globals['_ANOMALY']._serialized_end=229
+  _globals['_RESULTRESP']._serialized_start=231
+  _globals['_RESULTRESP']._serialized_end=282
+  _globals['_MLSERVICE']._serialized_start=385
+  _globals['_MLSERVICE']._serialized_end=509
 # @@protoc_insertion_point(module_scope)
