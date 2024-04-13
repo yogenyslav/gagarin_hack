@@ -8,12 +8,14 @@ import (
 
 type StreamQueryReq struct {
 	Source string `json:"source" validate:"required"`
+	Model  string `json:"model" validate:"required"`
 }
 
 type QueryCreate struct {
 	Source string
 	Type   shared.QueryType
 	Video  *multipart.FileHeader
+	Model  shared.ModelType
 }
 
 type QueryResponse struct {

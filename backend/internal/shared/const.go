@@ -111,6 +111,35 @@ func AnomalyClassFromString(v string) (AnomalyClass, error) {
 	}
 }
 
+type ModelType int
+
+const (
+	RgbModel ModelType = iota
+	BytesModel
+)
+
+func StringFromModelType(v ModelType) (string, error) {
+	switch v {
+	case RgbModel:
+		return "RGB", nil
+	case BytesModel:
+		return "BYTES", nil
+	default:
+		return "", ErrWrongQueryType
+	}
+}
+
+func ModelTypeFromString(v string) (ModelType, error) {
+	switch strings.ToLower(v) {
+	case "rgb":
+		return RgbModel, nil
+	case "bytes":
+		return BytesModel, nil
+	default:
+		return -1, ErrWrongModelType
+	}
+}
+
 const (
 	UniqueViolationCode = "23505"
 	VideoBucket         = "detection-video"

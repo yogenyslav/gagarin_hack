@@ -20,13 +20,13 @@ func NewRepo(pg *pgxpool.Pool) *Repo {
 }
 
 const insertOne = `
-	insert into query(type, source)
-	values ($1, $2)
+	insert into query(type, source, model)
+	values ($1, $2, $3)
 	returning id;
 `
 
 func (r *Repo) InsertOne(ctx context.Context, params model.Query) (int64, error) {
-	return postgres.QueryPrimitive[int64](ctx, r.pg, insertOne, params.Type, params.Source)
+	return postgres.QueryPrimitive[int64](ctx, r.pg, insertOne, params.Type, params.Source, params.Model)
 }
 
 const updateSource = `

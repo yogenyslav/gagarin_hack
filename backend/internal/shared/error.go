@@ -7,6 +7,7 @@ import (
 // 400
 var (
 	ErrWrongQueryType      = errors.New("unable to match query type")
+	ErrWrongModelType      = errors.New("unable to match model type")
 	ErrWrongResponseStatus = errors.New("unable to match response status")
 	ErrWrongAnomalyClass   = errors.New("unable to match anomaly class")
 	ErrQueryIsNotProcessed = errors.New("query with this id is not being processed")
