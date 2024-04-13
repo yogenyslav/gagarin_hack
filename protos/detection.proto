@@ -4,6 +4,12 @@ package detection;
 message Query {
   int64 id = 1;
   string source = 2;
+  Model model = 3;
+}
+
+enum Model {
+  Rgb = 0;
+  Bytes = 1;
 }
 
 enum ResponseStatus {
