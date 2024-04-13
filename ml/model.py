@@ -103,7 +103,8 @@ class CatBoost(Model):
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         X = self._scaler.transform(X)
-        return self.model.predict(X)
+        labels = self.model.predict(X)
+        return np.array([self.decode_label(label) for label in labels])
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         X = self._scaler.transform(X)
