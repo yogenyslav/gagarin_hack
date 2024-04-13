@@ -17,7 +17,7 @@ from pb.detection_pb2 import (
     Model as ModelChoice,
 )
 
-from dataset import DataProcess, SignalProcess
+from dataset import DataProcess, SignalProcess, ResNetProcess
 from model import Model, CatBoost, DLModel
 from video import save_bin
 
@@ -46,13 +46,18 @@ col = mongo_client.get_database(os.getenv("MONGO_DB")).get_collection("anomalies
 
 class MlService(pb.detection_pb2_grpc.MlServiceServicer):
     def __init__(
-        self, model_rgb: Model, model_bytes: Model, data_process: DataProcess
+        self,
+        model_rgb: Model,
+        model_bytes: Model,
+        data_process_rgb: ResNetProcess,
+        data_process_bytes: DataProcess,
     ) -> None:
         super().__init__()
 
         self._model_rgb = model_rgb
         self._model_bytes = model_bytes
-        self._data_process = data_process
+        self._data_process_rgb = data_process_rgb
+        self._data_process_bytes = data_process_bytes
 
     async def detect_frame_anomaly(
         self,
@@ -64,7 +69,13 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
         model_choice: str,
     ) -> dict:
         bin_path = save_bin(url, tmpdirname, idx, fps)
-        X = self._data_process.prepare_from_bin(bin_path).to_numpy()
+
+        X = (
+            self._data_process_bytes.prepare_from_bin(bin_path).to_numpy()
+            if model_choice == "Bytes"
+            else self._data_process_rgb.prepare_from_bin(bin_path)
+        )
+
         label = (
             self._model_bytes.predict(X)[0]
             if model_choice == "Bytes"
@@ -179,14 +190,15 @@ async def serve():
 
     cb_model = CatBoost()
     cb_model.load(cb_checkpoint_path)
-    data_process = SignalProcess()
+    cb_data_process = SignalProcess()
 
     resnet_model = DLModel()
     resnet_model.load(resnet_checkpoint_path)
+    resnet_data_process = ResNetProcess()
 
     s = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
     pb.detection_pb2_grpc.add_MlServiceServicer_to_server(
-        MlService(resnet_model, cb_model, data_process), s
+        MlService(resnet_model, cb_model, resnet_data_process, cb_data_process), s
     )
     s.add_insecure_port("[::]:10000")
 

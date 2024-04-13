@@ -10,33 +10,37 @@ import scipy.stats as stats
 from scipy.signal import medfilt
 from torchvision import transforms
 
+
 class DataProcess(abc.ABC):
     @abc.abstractmethod
-    def prepare_from_bin(self, bin_path: str) -> pd.DataFrame:
+    def prepare_from_bin(self, bin_path: str) -> pd.DataFrame | torch.Tensor:
         pass
+
 
 class ResNetProcess(DataProcess):
     def __init__(self) -> None:
         self.transform = transforms.Compose(
-                [
-                    transforms.ToTensor(),
-                    transforms.Resize(224),
-                    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225])
-                ])
-        
-    def prepare_from_bin(self, bin_path: str) -> pd.DataFrame:
+            [
+                transforms.ToTensor(),
+                transforms.Resize(224),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
+
+    def prepare_from_bin(self, bin_path: str) -> torch.Tensor:
         path = bin_path
-        target_path = path.replace('bin', 'h264')
+        target_path = path.replace("bin", "h264")
 
         # Копирование файла с изменением формата
         if not Path(target_path).exists():
-            with open(path, 'rb') as f:
+            with open(path, "rb") as f:
                 data = f.read()
-                with open(target_path, 'wb') as f:
-                    
+                with open(target_path, "wb") as f:
+
                     f.write(data)
-        
+
         # Чтение видео
         video = cv2.VideoCapture(target_path)
         seq = []
@@ -45,7 +49,7 @@ class ResNetProcess(DataProcess):
             ret, frame = video.read()
             if not ret:
                 break
-            
+
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Преобразование в RGB
             frame = cv2.resize(frame, (384, 384), interpolation=cv2.INTER_AREA)
             if self.transform:
@@ -54,13 +58,14 @@ class ResNetProcess(DataProcess):
                 frame = torch.from_numpy(frame)
             seq.append(frame)
             cnt += 1
-        
+
         video.release()
         os.remove(target_path)  # Удаление временного файла
-        
+
         seq = torch.stack(seq, dim=0)
         return seq[None]
-    
+
+
 class SignalProcess(DataProcess):
     def __init__(
         self,
