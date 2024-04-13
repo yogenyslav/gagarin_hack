@@ -1,0 +1,29 @@
+server:
+  port: 9999
+  logLevel: "debug"
+  corsOrigins: "http://localhost:3000"
+
+postgres:
+  user: "pguser"
+  password: "pgpass"
+  host: "pg"
+  port: 5432
+  db: "dev"
+  ssl: false
+
+ml:
+  host: "ml"
+  port: 10000
+
+minio:
+  host: "minio"
+  accessKey: "accessKey"
+  secretKey: "secretKey"
+  ssl: false
+  buckets:
+    - name: "test-1"
+      region: "eu-west-1"
+      lock: true
+    - name: "test-2"
+      region: "eu-west-1"
+      lock: false
