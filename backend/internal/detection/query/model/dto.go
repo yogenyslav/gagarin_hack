@@ -7,7 +7,7 @@ import (
 )
 
 type StreamQueryReq struct {
-	Source string `json:"link" validate:"required"`
+	Source string `json:"source" validate:"required"`
 }
 
 type QueryCreate struct {

@@ -26,7 +26,7 @@ func handleError(err error) ErrorResponse {
 	var (
 		ok               bool
 		e                ErrorResponse
-		validationErrors *validator.ValidationErrors
+		validationErrors validator.ValidationErrors
 	)
 
 	if pkg.CheckPageNotFound(err) {
