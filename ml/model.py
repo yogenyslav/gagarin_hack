@@ -3,13 +3,13 @@ import pickle
 from pathlib import Path
 
 import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import MinMaxScaler
-from catboost import CatBoostClassifier
 import torch
-from torch import nn
 import torchvision.models as models
-from sklearn.preprocessing import LabelEncoder
+from catboost import CatBoostClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+from torch import nn
+
 
 class Model(abc.ABC):
     @abc.abstractmethod
