@@ -125,9 +125,6 @@ class CatBoost(Model):
         with open(dir / "scaler.pkl", "rb") as f:
             self._scaler = pickle.load(f)
 
-    def decode_label(self, label: str) -> str:
-        return label
-
     @property
     def classes(self):
-        return self._model._classes
+        return ["blur", "crop", "highlight", "normal", "overlap"]
