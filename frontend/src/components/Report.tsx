@@ -145,10 +145,10 @@ const Report = observer(({ reportId }: Props) => {
             result.anomalies.map((anomaly) => {
                 return [
                     result.type === AnomalyType.VIDEO
-                        ? anomaly.ts.toString()
+                        ? rootStore.convertSecondsToMinutesAndSeconds(anomaly.ts)
                         : new Date(anomaly.ts).toLocaleTimeString(),
                     anomalyClassRegistry[anomaly.class] ?? 'Неизвестный тип',
-                    anomaly.link,
+                    anomaly.link.length > 0 ? anomaly.link[0] : '',
                 ];
             })
         );
@@ -221,8 +221,8 @@ const Report = observer(({ reportId }: Props) => {
                                         </Col>
                                     </Row>
                                 ) : (
-                                    result &&
-                                    result.status === AnomalyStatus.SUCCESS && (
+                                    (result && result.status === AnomalyStatus.SUCCESS) ||
+                                    (result.status === AnomalyStatus.CANCELED && (
                                         <Row gutter={[16, 16]}>
                                             <Col>
                                                 <Button onClick={() => copyToClipboard()}>
@@ -239,7 +239,7 @@ const Report = observer(({ reportId }: Props) => {
                                                 </Button>
                                             </Col>
                                         </Row>
-                                    )
+                                    ))
                                 )}
                             </Col>
                         </Row>

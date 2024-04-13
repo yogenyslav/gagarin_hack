@@ -2,7 +2,7 @@ import { AnomalyClass, AnomalyStatus, AnomalyType } from '../constants';
 
 export interface Anomaly {
     ts: number;
-    link: string;
+    link: string[];
     class: AnomalyClass;
 }
 // Если type == ‘STREAM’, то ts - unix timestamp
