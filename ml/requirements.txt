@@ -1,3 +1,12 @@
 grpcio
 grpcio-tools
-minio
+miniopy-async
+ffmpeg-python
+scikit-learn
+numpy
+pandas
+scipy
+python-dotenv
+opencv-python
+acapture
+aiofiles

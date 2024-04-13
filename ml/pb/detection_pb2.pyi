@@ -38,13 +38,14 @@ class ResultReq(_message.Message):
     def __init__(self, id: _Optional[int] = ...) -> None: ...
 
 class Anomaly(_message.Message):
-    __slots__ = ("ts", "link")
+    __slots__ = ("ts", "links", "cls")
     TS_FIELD_NUMBER: _ClassVar[int]
-    LINK_FIELD_NUMBER: _ClassVar[int]
-    CLASS_FIELD_NUMBER: _ClassVar[int]
+    LINKS_FIELD_NUMBER: _ClassVar[int]
+    CLS_FIELD_NUMBER: _ClassVar[int]
     ts: int
-    link: str
-    def __init__(self, ts: _Optional[int] = ..., link: _Optional[str] = ..., **kwargs) -> None: ...
+    links: _containers.RepeatedScalarFieldContainer[str]
+    cls: str
+    def __init__(self, ts: _Optional[int] = ..., links: _Optional[_Iterable[str]] = ..., cls: _Optional[str] = ...) -> None: ...
 
 class ResultResp(_message.Message):
     __slots__ = ("anomalies",)
