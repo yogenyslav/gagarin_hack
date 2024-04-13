@@ -86,9 +86,19 @@ func (ctrl *Controller) FindOneByQueryId(ctx context.Context, queryId int64) (mo
 	anomalies := resp.GetAnomalies()
 	res.Anomalies = make([]model.Anomaly, len(anomalies))
 	for idx, anomaly := range anomalies {
+		clsType, err := shared.AnomalyClassFromString(anomaly.GetCls())
+		if err != nil {
+			return res, err
+		}
+
+		clsString, err := shared.StringFromAnomalyClass(clsType)
+		if err != nil {
+			return res, err
+		}
+
 		res.Anomalies[idx].Ts = anomaly.GetTs()
 		res.Anomalies[idx].Links = anomaly.GetLinks()
-		res.Anomalies[idx].Cls = anomaly.GetCls()
+		res.Anomalies[idx].Cls = clsString
 	}
 
 	return res, nil
