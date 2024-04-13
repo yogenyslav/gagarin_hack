@@ -20,11 +20,12 @@ import HeaderLayout from '../components/HeaderLayout';
 enum ExportType {
     UploadVideo = 'Загрузить видео',
     RTSP = 'Указать RTSP ссылку',
+    UploadArchive = 'Загрузить архив',
 }
 
 const Home = observer(() => {
     const [selectedExportType, setSelectedExportType] = useState<
-        'Загрузить видео' | 'Указать RTSP ссылку'
+        'Загрузить видео' | 'Указать RTSP ссылку' | 'Загрузить архив'
     >('Загрузить видео');
     const [messageApi, contextHolder] = message.useMessage();
     const [form] = Form.useForm();
@@ -72,7 +73,11 @@ const Home = observer(() => {
                         <Row>
                             <Col span={24}>
                                 <Segmented
-                                    options={['Загрузить видео', 'Указать RTSP ссылку']}
+                                    options={[
+                                        'Загрузить видео',
+                                        'Указать RTSP ссылку',
+                                        'Загрузить архив',
+                                    ]}
                                     onChange={(value) => setSelectedExportType(value as ExportType)}
                                     defaultChecked={true}
                                 />
@@ -138,6 +143,48 @@ const Home = observer(() => {
                                             </Button>
                                         </Form.Item>
                                     </Form>
+                                </Col>
+                            </Row>
+                        )}
+
+                        {selectedExportType === ExportType.UploadArchive && (
+                            <Row style={{ marginTop: 20 }}>
+                                <Col>
+                                    <Upload
+                                        name='file'
+                                        beforeUpload={(file) => {
+                                            setLoading(true);
+
+                                            AnomalyApiServiceInstance.sendArchive(file)
+                                                .then((data) => {
+                                                    messageApi.success(
+                                                        'Начинается обработка файла'
+                                                    );
+
+                                                    console.log(data);
+
+                                                    setTimeout(() => {
+                                                        window.location.href = `/report/${data.ids.join(
+                                                            ','
+                                                        )}`;
+                                                    }, 1000);
+                                                })
+                                                .catch(() => {
+                                                    messageApi.error(
+                                                        'Ошибка загрузки файла. Попробуйте еще раз.'
+                                                    );
+                                                })
+                                                .finally(() => {
+                                                    setLoading(false);
+                                                });
+
+                                            return false;
+                                        }}
+                                        multiple={false}
+                                        maxCount={1}
+                                    >
+                                        <Button icon={<UploadOutlined />}>Загрузить архив</Button>
+                                    </Upload>
                                 </Col>
                             </Row>
                         )}

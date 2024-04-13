@@ -29,3 +29,7 @@ export interface VideoQueryParams {
 export interface StreamQueryParams {
     source: string;
 }
+
+export interface SendArchiveResponse {
+    ids: number[];
+}

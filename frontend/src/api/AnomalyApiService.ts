@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_URL } from '../config';
-import { Result, SendFileOrUrlResponse } from './models';
+import { Result, SendArchiveResponse, SendFileOrUrlResponse } from './models';
 
 class AnomalyApiServiceInstance {
     async sendRTSPUrl(url: string): Promise<SendFileOrUrlResponse> {
@@ -25,6 +25,24 @@ class AnomalyApiServiceInstance {
 
         const response = await axios.post<SendFileOrUrlResponse>(
             `${API_URL}/api/detection/video`,
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'ngrok-skip-browser-warning': true,
+                },
+            }
+        );
+
+        return response.data;
+    }
+
+    async sendArchive(file: File): Promise<SendArchiveResponse> {
+        const formData = new FormData();
+        formData.append('source', file);
+
+        const response = await axios.post<SendArchiveResponse>(
+            `${API_URL}/api/detection/archive`,
             formData,
             {
                 headers: {

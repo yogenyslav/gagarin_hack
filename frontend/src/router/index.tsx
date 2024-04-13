@@ -5,7 +5,7 @@ import UnauthorizedOnlyRoute from './UnauthorizedOnlyRoute';
 import AuthService from '../api/AuthService';
 import SignUp from '../pages/SignUp';
 import Login from '../pages/Login';
-import Report from '../pages/Report';
+import ReportPage from '../pages/ReportPage';
 
 export const router = createBrowserRouter([
     {
@@ -29,8 +29,8 @@ export const router = createBrowserRouter([
         element: <Home />,
     },
     {
-        path: '/report/:reportId',
-        element: <Report />,
+        path: '/report/:reportIdsWithComma',
+        element: <ReportPage />,
     },
     {
         path: '*',
