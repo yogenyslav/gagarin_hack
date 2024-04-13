@@ -77,32 +77,38 @@ class LogReg(Model):
     @property
     def classes(self):
         return ["not_anomaly", "blur"]
-    
+
 
 class ResNet(nn.Module):
     def __init__(self, n_class=2):
         super(ResNet, self).__init__()
-        
+
         self.resnet = models.resnet18(pretrained=True)
         self.resnet.fc = torch.nn.Identity()
-        
+
         self.fc = nn.Sequential(
-            nn.Linear(512, 256,),
+            nn.Linear(
+                512,
+                256,
+            ),
             nn.ReLU(),
-            nn.Linear(256, n_class)
+            nn.Linear(256, n_class),
         )
-        
+
     def forward(self, x):
         batch_size, seq_size = x.shape[:2]
-        x = self.resnet(x.reshape(batch_size*seq_size, 3, 224, 224))
+        x = self.resnet(x.reshape(batch_size * seq_size, 3, 224, 224))
         x = x.reshape(batch_size, seq_size, 512)
         x = x.mean(1)
         x = self.fc(x)
         return x
 
+
 class DLModel(Model):
-    def __init__(self,) -> None:
-        self._model = ResNet(5).to('cpu')
+    def __init__(
+        self,
+    ) -> None:
+        self._model = ResNet(5).to("cpu")
         self._le = LabelEncoder()
         self.model.eval()
 
@@ -120,7 +126,7 @@ class DLModel(Model):
 
     def save(self, dir: str) -> None:
         dir = Path(dir)
-        
+
         with open(dir / "model.pt", "wb") as f:
             torch.save(self.model, f)
 
@@ -138,7 +144,8 @@ class DLModel(Model):
     @property
     def classes(self):
         return self.le.classes_
-    
+
+
 class CatBoost(Model):
     def __init__(self, **kwargs) -> None:
         self._model = CatBoostClassifier(**kwargs)
@@ -158,7 +165,7 @@ class CatBoost(Model):
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         X = self._scaler.transform(X)
-        labels = self.model.predict(X)
+        labels = self.model.predict(X).reshape(1, -1)
         return np.array([self.decode_label(label) for label in labels])
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:

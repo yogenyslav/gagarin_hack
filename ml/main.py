@@ -14,6 +14,7 @@ from pb.detection_pb2 import (
     ResultReq,
     ResultResp,
     Anomaly,
+    Model as ModelChoice,
 )
 
 from dataset import DataProcess, SignalProcess
@@ -44,18 +45,31 @@ col = mongo_client.get_database(os.getenv("MONGO_DB")).get_collection("anomalies
 
 
 class MlService(pb.detection_pb2_grpc.MlServiceServicer):
-    def __init__(self, model: Model, data_process: DataProcess) -> None:
+    def __init__(
+        self, model_rgb: Model, model_bytes: Model, data_process: DataProcess
+    ) -> None:
         super().__init__()
 
-        self._model = model
+        self._model_rgb = model_rgb
+        self._model_bytes = model_bytes
         self._data_process = data_process
 
     async def detect_frame_anomaly(
-        self, url: str, tmpdirname: str, idx: int, fps: int, query_id: int
+        self,
+        url: str,
+        tmpdirname: str,
+        idx: int,
+        fps: int,
+        query_id: int,
+        model_choice: str,
     ) -> dict:
         bin_path = save_bin(url, tmpdirname, idx, fps)
         X = self._data_process.prepare_from_bin(bin_path).to_numpy()
-        label = self._model.predict(X)[0]
+        label = (
+            self._model_bytes.predict(X)[0]
+            if model_choice == "Bytes"
+            else self._model_rgb.predict(X)[0]
+        )
 
         if label == "normal":
             return {}
@@ -90,7 +104,7 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
     async def Process(self, query: Query, context: grpc.aio.ServicerContext):
         print(query.source)
-
+        model_choice = "Rgb" if query.model == ModelChoice.Rgb else "Bytes"
         url = query.source
         if not query.source.startswith("rtsp"):
             url = s3.presigned_get_object("detection-video", query.source)
@@ -114,7 +128,12 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
                 try:
                     anomaly = await self.detect_frame_anomaly(
-                        url, str(tmpdirname), idx, fps, query.id
+                        url,
+                        str(tmpdirname),
+                        idx,
+                        fps,
+                        query.id,
+                        model_choice,
                     )
                 except Exception as ex:
                     print(str(ex))
@@ -155,15 +174,19 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
 
 async def serve():
-    checkpoint_path = "./cb_checkpoint"
+    cb_checkpoint_path = "./cb_checkpoint"
+    resnet_checkpoint_path = "./resnet_checkpoint"
 
-    model = CatBoost()
-    model.load(checkpoint_path)
+    cb_model = CatBoost()
+    cb_model.load(cb_checkpoint_path)
     data_process = SignalProcess()
+
+    resnet_model = CatBoost()
+    resnet_model.load(cb_checkpoint_path)
 
     s = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
     pb.detection_pb2_grpc.add_MlServiceServicer_to_server(
-        MlService(model, data_process), s
+        MlService(resnet_model, cb_model, data_process), s
     )
     s.add_insecure_port("[::]:10000")
 
