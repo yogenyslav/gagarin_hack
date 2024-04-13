@@ -77,14 +77,7 @@ class LogReg(Model):
     @property
     def classes(self):
         return ["not_anomaly", "blur"]
-
-<<<<<<< HEAD
-=======
-import torch
-from torch import nn
-import torchvision.models as models
-from sklearn.preprocessing import LabelEncoder
->>>>>>> 4682d7602850fc60f73cdbb9a2871e56be5055fb
+    
 
 class ResNet(nn.Module):
     def __init__(self, n_class=2):
