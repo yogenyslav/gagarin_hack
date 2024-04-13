@@ -13,9 +13,11 @@ docker_remove: docker_down
 	docker volume rm ${PROJECT_DIR}_pg_data
 	docker volume rm ${PROJECT_DIR}_mongo
 	docker volume rm ${PROJECT_DIR}_mongo_conf
-	#docker volume rm ${PROJECT_DIR}_minio
+	docker volume rm ${PROJECT_DIR}_zoo_data
+	docker volume rm ${PROJECT_DIR}_kafka
 	docker image rm ${PROJECT_DIR}_backend
 	docker image rm ${PROJECT_DIR}_ml
+	docker image rm ${PROJECT_DIR}_responser
 
 .PHONY: docker_restart
 docker_restart: docker_down docker_up
@@ -25,7 +27,7 @@ docker_purge_restart: docker_remove docker_up
 
 .PHONY: local
 local:
-	docker compose up pg ml mongo minio -d --build
+	docker compose up pg ml mongo responser -d --build
 	go run cmd/server/main.go
 
 .PHONY: migrate_up

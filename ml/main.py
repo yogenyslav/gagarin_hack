@@ -20,14 +20,13 @@ from dataset import DataProcess, SignalProcess
 from model import Model, CatBoost
 from video import save_bin
 
-from miniopy_async import Minio
+from minio import Minio
 import pymongo
-import cv2
-import aiofiles
+import aiokafka
 import asyncio
-import numpy as np
-from PIL import Image
-from io import BytesIO
+import json
+import aiofiles
+import base64
 
 
 load_dotenv(".env")
@@ -40,7 +39,6 @@ s3 = Minio(
 )
 
 mongo_url = f"mongodb://{os.getenv('MONGO_HOST')}:{os.getenv('MONGO_PORT')}/{os.getenv('MONGO_DB')}"
-print(f"mongo_url = {mongo_url}")
 mongo_client = pymongo.MongoClient(mongo_url)
 col = mongo_client.get_database(os.getenv("MONGO_DB")).get_collection("anomalies")
 
@@ -51,58 +49,12 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
         self._model = model
         self._data_process = data_process
-
-    async def _save_frame(
-        self,
-        bin_path: str,
-        tmpdirname: str,
-        idx: int,
-        query_id: int,
-        fps: int,
-        label: str,
-    ):
-        async with aiofiles.open(bin_path, "rb") as bin_f:
-            data = await bin_f.read()
-            async with aiofiles.open(
-                f"{tmpdirname}/anomaly_frames_{query_id}.h264", "wb"
-            ) as f:
-                await f.write(data)
-
-            cap = cv2.VideoCapture(f"{tmpdirname}/anomaly_frames_{query_id}.h264")
-            cnt = 0
-            total_frames_uploaded = 0
-            print(f"fps = {fps}")
-            while cnt < fps - 1:
-                _, raw = cap.read()
-                if cnt == 0 or cnt == fps - 2 or cnt == (fps - 1) // 2:
-                    frame = cv2.cvtColor(raw, cv2.IMREAD_COLOR)
-                    img = np.array(
-                        Image.open(BytesIO(cv2.imencode(".jpg", frame)[1].tobytes()))
-                    )
-                    data = BytesIO()
-                    Image.fromarray(img).save(data, "JPEG")
-                    data.seek(0)
-                    await s3.put_object(
-                        "detection-frame",
-                        f"{query_id}/{idx}_{total_frames_uploaded}.jpg",
-                        data,
-                        length=len(data.getvalue()),
-                        content_type="image/jpeg",
-                    )
-                    print(f"Uploaded {query_id}/{idx}_{total_frames_uploaded}.jpg")
-                    total_frames_uploaded += 1
-                cnt += 1
-
-            print(f"pupupu")
-            col.insert_one(
-                {
-                    "query_id": query_id,
-                    "ts": idx,
-                    "cls": label,
-                    "cnt": total_frames_uploaded,
-                }
-            )
-            print(f"Inserted anomaly {query_id}/{idx}_{total_frames_uploaded}")
+        self.producer = aiokafka.AIOKafkaProducer(
+            bootstrap_servers=os.getenv("KAFKA_HOST"),
+            value_serializer=lambda x: json.dumps(x).encode(encoding="utf-8"),
+            acks="all",
+            enable_idempotence=True,
+        )
 
     async def detect_frame_anomaly(
         self, url: str, tmpdirname: str, idx: int, fps: int, query_id: int
@@ -117,9 +69,20 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
         label = self._model.decode_label(label)
 
         print(f"Anomaly detected at {idx} with label {label}")
-        await asyncio.create_task(
-            self._save_frame(bin_path, tmpdirname, idx, query_id, fps, label)
-        )
+
+        async with aiofiles.open(bin_path, "rb") as bin_f:
+            data = await bin_f.read()
+            data = base64.b64encode(data).decode("utf-8")
+            await self.producer.send_and_wait(
+                "anomalies",
+                {
+                    "idx": idx,
+                    "cls": label,
+                    "fps": fps,
+                    "query_id": query_id,
+                    "data": data,
+                },
+            )
 
         return {"ts": idx, "class": label}
 

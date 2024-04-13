@@ -1,6 +1,6 @@
 grpcio
 grpcio-tools
-miniopy-async
+minio
 ffmpeg-python
 scikit-learn
 numpy
@@ -8,8 +8,8 @@ pandas
 scipy
 python-dotenv
 opencv-python
-acapture
 aiofiles
 pymongo
 pillow
 catboost
+aiokafka

@@ -4,16 +4,77 @@ volumes:
   pg_data:
   mongo:
   mongo_conf:
+  zoo_data:
+  kafka:
 
 services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: zookeeper:2888:3888
+    healthcheck:
+      test: echo stat | nc localhost 2181
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - zoo_data:/var/lib/zookeeper/log
+      - zoo_data:/etc/zookeeper/secrets
+      - zoo_data:/var/lib/zookeeper/data
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    healthcheck:
+      test: ps augwwx | egrep [S]upportedKafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9091:9091"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENERS: LISTENER_INT://kafka:29091,LISTENER_EXT://0.0.0.0:9091
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_INT://kafka:29091,LISTENER_EXT://localhost:9091
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INT:PLAINTEXT,LISTENER_EXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INT
+      ZOOKEEPER: zookeeper:2181
+    volumes:
+      - kafka:/mnt/shared/config
+      - kafka:/var/lib/kafka/data
+      - kafka:/etc/kafka/secrets
+
   ml:
     build:
       context: ./ml
       dockerfile: Dockerfile
     restart: always
     image: ${PROJECT_DIR}_ml
+    depends_on:
+      - kafka
+      - mongo
     ports:
       - "10000:10000"
+
+  responser:
+    build:
+      context: ./responser
+      dockerfile: Dockerfile
+    restart: always
+    image: ${PROJECT_DIR}_responser
+    depends_on:
+      - kafka
+      - mongo
+    ports:
+      - "10001:10001"
 
   mongo:
     image: mongo:5.0
@@ -47,15 +108,17 @@ services:
       - pg
       - mongo
       - ml
+      - responser
+      - kafka
     ports:
       - "9999:9999"
     command: ./main
 
   frontend:
     build:
-        context: ./frontend
-        dockerfile: Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: frontend
     restart: always
     ports:
-        - "3000:5173"
+      - "3000:5173"

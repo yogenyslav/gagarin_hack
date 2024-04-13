@@ -1,0 +1,6 @@
+aiokafka
+pymongo
+minio
+python-dotenv
+pillow
+opencv-python
