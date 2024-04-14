@@ -4,6 +4,7 @@ import {
     Col,
     Collapse,
     CollapseProps,
+    Empty,
     Row,
     Spin,
     Statistic,
@@ -258,15 +259,21 @@ const Report = observer(({ reportId }: Props) => {
                                 />
                             </Col>
                             <Col xs={{ span: 24 }} lg={{ span: 18 }}>
-                                <Collapse
-                                    defaultActiveKey={['1']}
-                                    activeKey={rootStore.selectedAnomalyIdsArray}
-                                    expandIconPosition={'start'}
-                                    items={getItems()}
-                                    onChange={(selectedKeys) => {
-                                        rootStore.setSelectedAnomalyIds(selectedKeys);
-                                    }}
-                                />
+                                {result?.anomalies.length > 0 ? (
+                                    <Collapse
+                                        defaultActiveKey={['1']}
+                                        activeKey={rootStore.selectedAnomalyIdsArray}
+                                        expandIconPosition={'start'}
+                                        items={getItems()}
+                                        onChange={(selectedKeys) => {
+                                            rootStore.setSelectedAnomalyIds(selectedKeys);
+                                        }}
+                                    />
+                                ) : (
+                                    <Empty
+                                        description={<span>Пока не найдено ни одной аномалии</span>}
+                                    />
+                                )}
                             </Col>
                         </Row>
                     </div>

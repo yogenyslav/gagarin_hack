@@ -25,7 +25,10 @@ const ReportPage = observer(() => {
                         {reportIds &&
                             reportIds.map((reportId) => (
                                 <>
-                                    <Divider style={{ marginTop: 50, marginBottom: 20 }} />
+                                    <Divider
+                                        key={reportId}
+                                        style={{ marginTop: 50, marginBottom: 20 }}
+                                    />
 
                                     <Report key={reportId} reportId={+reportId} />
                                 </>
