@@ -158,16 +158,17 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
     async def FindResult(self, query: ResultReq, context: grpc.aio.ServicerContext):
         res: list[Anomaly] = []
-
-        anomalies = col.find({"query_id": query.id})
-        if len(anomalies) == 0:
+        try:
+            anomalies = col.find({"query_id": query.id})
+            for anomaly in anomalies:
+                a = Anomaly(
+                    ts=anomaly["ts"], cls=anomaly["cls"], links=anomaly["links"]
+                )
+                res.append(a)
             return ResultResp(anomalies=res)
-
-        for anomaly in anomalies:
-            a = Anomaly(ts=anomaly["ts"], cls=anomaly["cls"], links=anomaly["links"])
-            res.append(a)
-
-        return ResultResp(anomalies=res)
+        except Exception as e:
+            print(e)
+            return ResultResp(anomalies=[])
 
 
 async def serve():
