@@ -159,23 +159,10 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
     async def FindResult(self, query: ResultReq, context: grpc.aio.ServicerContext):
         res: list[Anomaly] = []
 
-        anomalies = (
-            mongo_client.get_database(os.getenv("MONGO_DB"))
-            .get_collection("anomalies")
-            .find({"query_id": query.id})
-        )
+        anomalies = col.find({"query_id": query.id})
 
         for anomaly in anomalies:
-            a = Anomaly(ts=anomaly["ts"], cls=anomaly["cls"])
-
-            links = []
-            for i in range(anomaly["cnt"]):
-                links.append(
-                    s3.presigned_get_object(
-                        "detection-frame", f"{query.id}/{anomaly['ts']}_{i}.jpg"
-                    )
-                )
-            a.links.extend(links)
+            a = Anomaly(ts=anomaly["ts"], cls=anomaly["cls"], links=anomaly["links"])
             res.append(a)
 
         return ResultResp(anomalies=res)

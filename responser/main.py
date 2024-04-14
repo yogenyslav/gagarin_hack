@@ -75,12 +75,21 @@ async def main():
                     total_frames_uploaded += 1
                     cnt += 1
 
+                links = []
+                for i in range(total_frames_uploaded):
+                    links.append(
+                        s3.presigned_get_object(
+                            "detection-frame", f"{query_id}/{idx}_{i}.jpg"
+                        )
+                    )
+
                 col.insert_one(
                     {
                         "query_id": query_id,
                         "ts": idx,
                         "cls": label,
                         "cnt": total_frames_uploaded,
+                        "links": links,
                     }
                 )
                 print(f"Inserted anomaly {query_id}/{idx}_{total_frames_uploaded}")
