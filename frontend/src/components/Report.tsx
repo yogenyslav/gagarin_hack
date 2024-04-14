@@ -76,6 +76,13 @@ const Report = observer(({ reportId }: Props) => {
                         setIsLoadingInitially(false);
                     });
             } catch (error) {
+                console.log(error);
+
+                setTimeout(() => {
+                    fetchData();
+                    return;
+                }, 3000);
+
                 setIsLoading(false);
                 if (result) {
                     result.status = AnomalyStatus.ERROR;
