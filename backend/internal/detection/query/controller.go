@@ -89,6 +89,11 @@ func (ctrl *Controller) InsertOne(ctx context.Context, params model.QueryCreate)
 }
 
 func (ctrl *Controller) process(ctx context.Context, id int64, params model.Query) {
+	var (
+		err error
+		s   shared.ResponseStatus
+	)
+
 	withCancel, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -97,9 +102,13 @@ func (ctrl *Controller) process(ctx context.Context, id int64, params model.Quer
 	logger.Debugf("processing %v", ctrl.processing)
 	ctrl.mu.Unlock()
 
+	isCanceled := false
+
+	logger.Debug(pb.Model(params.Model))
 	in := &pb.Query{
 		Id:     id,
 		Source: params.Source,
+		Model:  pb.Model(params.Model),
 	}
 	resp, err := ctrl.ml.Process(withCancel, in)
 	if err != nil {
@@ -108,20 +117,25 @@ func (ctrl *Controller) process(ctx context.Context, id int64, params model.Quer
 			logger.Errorf("processing query %d failed: %v", id, err)
 		} else {
 			logger.Infof("processing query %d canceled", id)
+			isCanceled = true
 		}
 	}
 
-	logger.Infof("processing query %d finished with status %v", id, resp.GetStatus())
+	if !isCanceled {
+		logger.Infof("processing query %d finished with status %v", id, resp.GetStatus())
 
-	s, err := shared.ResponseStatusFromString(resp.GetStatus().String())
-	if err != nil {
-		logger.Warnf("%v", err)
-		return
-	}
+		s, err = shared.ResponseStatusFromString(resp.GetStatus().String())
+		if err != nil {
+			logger.Warnf("%v", err)
+			return
+		}
 
-	if s == shared.ProcessingStatus {
-		logger.Warnf("unexpected status: %v", s)
-		s = shared.ErrorStatus
+		if s == shared.ProcessingStatus {
+			logger.Warnf("unexpected status: %v", s)
+			s = shared.ErrorStatus
+		}
+	} else {
+		s = shared.CanceledStatus
 	}
 
 	if err = ctrl.rc.UpdateOne(context.Background(), respmodel.QueryResponseUpdate{

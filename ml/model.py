@@ -122,6 +122,7 @@ class DLModel(Model):
 
     @torch.no_grad
     def predict(self, X: torch.Tensor) -> np.ndarray:
+        print(self.le.classes_)
         return self.le.inverse_transform(self.model(X).argmax(1))
 
     def save(self, dir: str) -> None:

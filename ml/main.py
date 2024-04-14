@@ -58,6 +58,12 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
         self._model_bytes = model_bytes
         self._data_process_rgb = data_process_rgb
         self._data_process_bytes = data_process_bytes
+        self.producer = aiokafka.AIOKafkaProducer(
+            bootstrap_servers=os.getenv("KAFKA_HOST"),
+            value_serializer=lambda x: json.dumps(x).encode(encoding="utf-8"),
+            acks="all",
+            enable_idempotence=True,
+        )
 
     async def detect_frame_anomaly(
         self,
@@ -87,29 +93,19 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
 
         print(f"Anomaly detected at {idx} with label {label}")
 
-        producer = aiokafka.AIOKafkaProducer(
-            bootstrap_servers=os.getenv("KAFKA_HOST"),
-            value_serializer=lambda x: json.dumps(x).encode(encoding="utf-8"),
-            acks="all",
-            enable_idempotence=True,
-        )
-        await producer.start()
-        try:
-            async with aiofiles.open(bin_path, "rb") as bin_f:
-                data = await bin_f.read()
-                data = base64.b64encode(data).decode("utf-8")
-                await producer.send_and_wait(
-                    "anomalies",
-                    {
-                        "idx": idx,
-                        "cls": label,
-                        "fps": fps,
-                        "query_id": query_id,
-                        "data": data,
-                    },
-                )
-        finally:
-            await producer.stop()
+        async with aiofiles.open(bin_path, "rb") as bin_f:
+            data = await bin_f.read()
+            data = base64.b64encode(data).decode("utf-8")
+            await self.producer.send_and_wait(
+                "anomalies",
+                {
+                    "idx": idx,
+                    "cls": label,
+                    "fps": fps,
+                    "query_id": query_id,
+                    "data": data,
+                },
+            )
 
         return {"ts": idx, "class": label}
 
@@ -135,6 +131,8 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
         with tempfile.TemporaryDirectory() as tmpdirname:
             for idx in frames_to_read:
                 if context.cancelled():
+                    print("cancelled")
+                    await self.producer.stop()
                     return Response(status=ResponseStatus.Canceled)
 
                 try:
@@ -197,14 +195,17 @@ async def serve():
     resnet_data_process = ResNetProcess()
 
     s = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
-    pb.detection_pb2_grpc.add_MlServiceServicer_to_server(
-        MlService(resnet_model, cb_model, resnet_data_process, cb_data_process), s
-    )
+    ml_service = MlService(resnet_model, cb_model, resnet_data_process, cb_data_process)
+    pb.detection_pb2_grpc.add_MlServiceServicer_to_server(ml_service, s)
     s.add_insecure_port("[::]:10000")
 
-    await s.start()
-    await s.wait_for_termination()
-    await s.stop(5)
+    try:
+        await ml_service.producer.start()
+        await s.start()
+        await s.wait_for_termination()
+        await s.stop(5)
+    finally:
+        await ml_service.producer.stop()
 
 
 if __name__ == "__main__":
