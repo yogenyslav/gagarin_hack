@@ -160,6 +160,8 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
         res: list[Anomaly] = []
 
         anomalies = col.find({"query_id": query.id})
+        if len(anomalies) == 0:
+            return ResultResp(anomalies=res)
 
         for anomaly in anomalies:
             a = Anomaly(ts=anomaly["ts"], cls=anomaly["cls"], links=anomaly["links"])
