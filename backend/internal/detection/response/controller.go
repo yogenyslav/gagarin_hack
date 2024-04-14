@@ -58,14 +58,14 @@ func (ctrl *Controller) UpdateOne(ctx context.Context, params model.QueryRespons
 func (ctrl *Controller) FindOneByQueryId(ctx context.Context, queryId int64) (model.ResultResponseDto, error) {
 	var res model.ResultResponseDto
 
-	response, err := ctrl.repo.FindOneByQueryId(ctx, queryId)
+	response, err := ctrl.repo.FindOneByQueryId(context.Background(), queryId)
 	if err != nil {
 		logger.Errorf("failed to find response: %v", err)
 		return res, shared.ErrFindRecord
 	}
 
 	in := &pb.ResultReq{Id: queryId}
-	resp, err := ctrl.ml.FindResult(ctx, in)
+	resp, err := ctrl.ml.FindResult(context.Background(), in)
 	if err != nil {
 		logger.Errorf("failed to find processed frames: %v", err)
 		return res, shared.ErrFindResult
