@@ -132,7 +132,6 @@ class MlService(pb.detection_pb2_grpc.MlServiceServicer):
             for idx in frames_to_read:
                 if context.cancelled():
                     print("cancelled")
-                    await self.producer.stop()
                     return Response(status=ResponseStatus.Canceled)
 
                 try:
@@ -199,13 +198,11 @@ async def serve():
     pb.detection_pb2_grpc.add_MlServiceServicer_to_server(ml_service, s)
     s.add_insecure_port("[::]:10000")
 
-    try:
-        await ml_service.producer.start()
-        await s.start()
-        await s.wait_for_termination()
-        await s.stop(5)
-    finally:
-        await ml_service.producer.stop()
+    await ml_service.producer.start()
+    await s.start()
+    await s.wait_for_termination()
+    await s.stop(5)
+    await ml_service.producer.stop()
 
 
 if __name__ == "__main__":
