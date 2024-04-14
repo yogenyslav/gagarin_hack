@@ -3,6 +3,7 @@ import { Anomaly } from '../api/models';
 // eslint-disable-next-line
 // @ts-ignore
 import gifshot from 'gifshot';
+import { Col, Divider, Row } from 'antd';
 
 type Props = {
     anomaly: Anomaly;
@@ -45,7 +46,12 @@ const AnomalyCard = ({ anomaly }: Props) => {
             {anomaly.link.length > 0 && (
                 <img style={{ width: '100%' }} src={anomaly.link[0]} alt='anomaly' />
             )}
-            {gifURL && <img src={gifURL} alt='Generated GIF' />}
+
+            <Divider style={{ marginTop: 20, marginBottom: 20 }} />
+
+            <Row justify={'center'}>
+                <Col>{gifURL && <img src={gifURL} alt='Generated GIF' />}</Col>
+            </Row>
         </div>
     );
 };
